@@ -1318,11 +1318,11 @@ class TranscriptionManager {
         URL.revokeObjectURL(url);
     }
 
-    // Dicionário offline expandido bidirecional
+    // Dicionário offline multilíngue completo
     getDictionary() {
         return {
+            // Português - Inglês
             'pt-en': {
-                // Palavras comuns
                 'olá': 'hello', 'oi': 'hi', 'tchau': 'bye', 'adeus': 'goodbye',
                 'bom': 'good', 'boa': 'good', 'dia': 'day', 'tarde': 'afternoon', 'noite': 'night',
                 'obrigado': 'thank you', 'obrigada': 'thank you', 'por favor': 'please',
@@ -1330,18 +1330,10 @@ class TranscriptionManager {
                 'hoje': 'today', 'ontem': 'yesterday', 'amanhã': 'tomorrow',
                 'agora': 'now', 'depois': 'later', 'antes': 'before',
                 'tudo': 'everything', 'bem': 'well', 'muito': 'very', 'pouco': 'little',
-                // Verbos
-                'ser': 'to be', 'estar': 'to be', 'ter': 'to have', 'fazer': 'to do/make',
-                'ir': 'to go', 'vir': 'to come', 'ver': 'to see', 'dar': 'to give',
-                'saber': 'to know', 'poder': 'can/may', 'querer': 'to want',
-                'falar': 'to speak', 'comer': 'to eat', 'beber': 'to drink',
-                // Substantivos
                 'casa': 'house', 'trabalho': 'work', 'escola': 'school', 'família': 'family',
-                'amigo': 'friend', 'amor': 'love', 'tempo': 'time/weather', 'vida': 'life',
+                'amigo': 'friend', 'amor': 'love', 'tempo': 'time', 'vida': 'life',
                 'mundo': 'world', 'pessoa': 'person', 'coisa': 'thing', 'lugar': 'place',
-                'reunião': 'meeting', 'projeto': 'project', 'tarefa': 'task',
-                'livro': 'book', 'carro': 'car', 'comida': 'food', 'água': 'water',
-                'test': 'teste', 'teste': 'test'
+                'teste': 'test', 'livro': 'book', 'carro': 'car', 'comida': 'food', 'água': 'water'
             },
             'en-pt': {
                 'hello': 'olá', 'hi': 'oi', 'bye': 'tchau', 'goodbye': 'adeus',
@@ -1351,16 +1343,172 @@ class TranscriptionManager {
                 'today': 'hoje', 'yesterday': 'ontem', 'tomorrow': 'amanhã',
                 'now': 'agora', 'later': 'depois', 'before': 'antes',
                 'everything': 'tudo', 'well': 'bem', 'very': 'muito', 'little': 'pouco',
-                'to be': 'ser/estar', 'to have': 'ter', 'to do': 'fazer', 'to make': 'fazer',
-                'to go': 'ir', 'to come': 'vir', 'to see': 'ver', 'to give': 'dar',
-                'to know': 'saber', 'can': 'poder', 'to want': 'querer',
-                'to speak': 'falar', 'to eat': 'comer', 'to drink': 'beber',
                 'house': 'casa', 'work': 'trabalho', 'school': 'escola', 'family': 'família',
-                'friend': 'amigo', 'love': 'amor', 'time': 'tempo', 'weather': 'tempo', 'life': 'vida',
+                'friend': 'amigo', 'love': 'amor', 'time': 'tempo', 'life': 'vida',
                 'world': 'mundo', 'person': 'pessoa', 'thing': 'coisa', 'place': 'lugar',
-                'meeting': 'reunião', 'project': 'projeto', 'task': 'tarefa',
-                'book': 'livro', 'car': 'carro', 'food': 'comida', 'water': 'água',
-                'test': 'teste'
+                'test': 'teste', 'book': 'livro', 'car': 'carro', 'food': 'comida', 'water': 'água'
+            },
+            // Português - Espanhol
+            'pt-es': {
+                'olá': 'hola', 'oi': 'hola', 'tchau': 'adiós', 'adeus': 'adiós',
+                'bom': 'bueno', 'boa': 'buena', 'dia': 'día', 'tarde': 'tarde', 'noite': 'noche',
+                'obrigado': 'gracias', 'obrigada': 'gracias', 'por favor': 'por favor',
+                'sim': 'sí', 'não': 'no', 'talvez': 'quizás',
+                'hoje': 'hoy', 'ontem': 'ayer', 'amanhã': 'mañana',
+                'agora': 'ahora', 'depois': 'después', 'antes': 'antes',
+                'tudo': 'todo', 'bem': 'bien', 'muito': 'mucho', 'pouco': 'poco',
+                'casa': 'casa', 'trabalho': 'trabajo', 'escola': 'escuela', 'família': 'familia',
+                'amigo': 'amigo', 'amor': 'amor', 'tempo': 'tiempo', 'vida': 'vida',
+                'mundo': 'mundo', 'pessoa': 'persona', 'coisa': 'cosa', 'lugar': 'lugar',
+                'teste': 'prueba', 'livro': 'libro', 'carro': 'coche', 'comida': 'comida', 'água': 'agua'
+            },
+            'es-pt': {
+                'hola': 'olá', 'adiós': 'tchau',
+                'bueno': 'bom', 'buena': 'boa', 'día': 'dia', 'tarde': 'tarde', 'noche': 'noite',
+                'gracias': 'obrigado', 'por favor': 'por favor',
+                'sí': 'sim', 'no': 'não', 'quizás': 'talvez',
+                'hoy': 'hoje', 'ayer': 'ontem', 'mañana': 'amanhã',
+                'ahora': 'agora', 'después': 'depois', 'antes': 'antes',
+                'todo': 'tudo', 'bien': 'bem', 'mucho': 'muito', 'poco': 'pouco',
+                'casa': 'casa', 'trabajo': 'trabalho', 'escuela': 'escola', 'familia': 'família',
+                'amigo': 'amigo', 'amor': 'amor', 'tiempo': 'tempo', 'vida': 'vida',
+                'mundo': 'mundo', 'persona': 'pessoa', 'cosa': 'coisa', 'lugar': 'lugar',
+                'prueba': 'teste', 'libro': 'livro', 'coche': 'carro', 'comida': 'comida', 'agua': 'água'
+            },
+            // Português - Francês
+            'pt-fr': {
+                'olá': 'bonjour', 'oi': 'salut', 'tchau': 'au revoir', 'adeus': 'adieu',
+                'bom': 'bon', 'boa': 'bonne', 'dia': 'jour', 'tarde': 'après-midi', 'noite': 'nuit',
+                'obrigado': 'merci', 'obrigada': 'merci', 'por favor': "s'il vous plaît",
+                'sim': 'oui', 'não': 'non', 'talvez': 'peut-être',
+                'hoje': "aujourd'hui", 'ontem': 'hier', 'amanhã': 'demain',
+                'agora': 'maintenant', 'depois': 'après', 'antes': 'avant',
+                'tudo': 'tout', 'bem': 'bien', 'muito': 'très', 'pouco': 'peu',
+                'casa': 'maison', 'trabalho': 'travail', 'escola': 'école', 'família': 'famille',
+                'amigo': 'ami', 'amor': 'amour', 'tempo': 'temps', 'vida': 'vie',
+                'mundo': 'monde', 'pessoa': 'personne', 'coisa': 'chose', 'lugar': 'lieu',
+                'teste': 'test', 'livro': 'livre', 'carro': 'voiture', 'comida': 'nourriture', 'água': 'eau'
+            },
+            'fr-pt': {
+                'bonjour': 'olá', 'salut': 'oi', 'au revoir': 'tchau', 'adieu': 'adeus',
+                'bon': 'bom', 'bonne': 'boa', 'jour': 'dia', 'après-midi': 'tarde', 'nuit': 'noite',
+                'merci': 'obrigado', "s'il vous plaît": 'por favor',
+                'oui': 'sim', 'non': 'não', 'peut-être': 'talvez',
+                "aujourd'hui": 'hoje', 'hier': 'ontem', 'demain': 'amanhã',
+                'maintenant': 'agora', 'après': 'depois', 'avant': 'antes',
+                'tout': 'tudo', 'bien': 'bem', 'très': 'muito', 'peu': 'pouco',
+                'maison': 'casa', 'travail': 'trabalho', 'école': 'escola', 'famille': 'família',
+                'ami': 'amigo', 'amour': 'amor', 'temps': 'tempo', 'vie': 'vida',
+                'monde': 'mundo', 'personne': 'pessoa', 'chose': 'coisa', 'lieu': 'lugar',
+                'test': 'teste', 'livre': 'livro', 'voiture': 'carro', 'nourriture': 'comida', 'eau': 'água'
+            },
+            // Português - Alemão
+            'pt-de': {
+                'olá': 'hallo', 'oi': 'hi', 'tchau': 'tschüss', 'adeus': 'auf wiedersehen',
+                'bom': 'gut', 'boa': 'gut', 'dia': 'tag', 'tarde': 'nachmittag', 'noite': 'nacht',
+                'obrigado': 'danke', 'obrigada': 'danke', 'por favor': 'bitte',
+                'sim': 'ja', 'não': 'nein', 'talvez': 'vielleicht',
+                'hoje': 'heute', 'ontem': 'gestern', 'amanhã': 'morgen',
+                'agora': 'jetzt', 'depois': 'später', 'antes': 'vorher',
+                'tudo': 'alles', 'bem': 'gut', 'muito': 'sehr', 'pouco': 'wenig',
+                'casa': 'haus', 'trabalho': 'arbeit', 'escola': 'schule', 'família': 'familie',
+                'amigo': 'freund', 'amor': 'liebe', 'tempo': 'zeit', 'vida': 'leben',
+                'mundo': 'welt', 'pessoa': 'person', 'coisa': 'ding', 'lugar': 'ort',
+                'teste': 'test', 'livro': 'buch', 'carro': 'auto', 'comida': 'essen', 'água': 'wasser'
+            },
+            'de-pt': {
+                'hallo': 'olá', 'hi': 'oi', 'tschüss': 'tchau', 'auf wiedersehen': 'adeus',
+                'gut': 'bom', 'tag': 'dia', 'nachmittag': 'tarde', 'nacht': 'noite',
+                'danke': 'obrigado', 'bitte': 'por favor',
+                'ja': 'sim', 'nein': 'não', 'vielleicht': 'talvez',
+                'heute': 'hoje', 'gestern': 'ontem', 'morgen': 'amanhã',
+                'jetzt': 'agora', 'später': 'depois', 'vorher': 'antes',
+                'alles': 'tudo', 'sehr': 'muito', 'wenig': 'pouco',
+                'haus': 'casa', 'arbeit': 'trabalho', 'schule': 'escola', 'familie': 'família',
+                'freund': 'amigo', 'liebe': 'amor', 'zeit': 'tempo', 'leben': 'vida',
+                'welt': 'mundo', 'person': 'pessoa', 'ding': 'coisa', 'ort': 'lugar',
+                'test': 'teste', 'buch': 'livro', 'auto': 'carro', 'essen': 'comida', 'wasser': 'água'
+            },
+            // Português - Italiano
+            'pt-it': {
+                'olá': 'ciao', 'oi': 'ciao', 'tchau': 'ciao', 'adeus': 'addio',
+                'bom': 'buono', 'boa': 'buona', 'dia': 'giorno', 'tarde': 'pomeriggio', 'noite': 'notte',
+                'obrigado': 'grazie', 'obrigada': 'grazie', 'por favor': 'per favore',
+                'sim': 'sì', 'não': 'no', 'talvez': 'forse',
+                'hoje': 'oggi', 'ontem': 'ieri', 'amanhã': 'domani',
+                'agora': 'adesso', 'depois': 'dopo', 'antes': 'prima',
+                'tudo': 'tutto', 'bem': 'bene', 'muito': 'molto', 'pouco': 'poco',
+                'casa': 'casa', 'trabalho': 'lavoro', 'escola': 'scuola', 'família': 'famiglia',
+                'amigo': 'amico', 'amor': 'amore', 'tempo': 'tempo', 'vida': 'vita',
+                'mundo': 'mondo', 'pessoa': 'persona', 'coisa': 'cosa', 'lugar': 'luogo',
+                'teste': 'test', 'livro': 'libro', 'carro': 'macchina', 'comida': 'cibo', 'água': 'acqua'
+            },
+            'it-pt': {
+                'ciao': 'olá', 'addio': 'adeus',
+                'buono': 'bom', 'buona': 'boa', 'giorno': 'dia', 'pomeriggio': 'tarde', 'notte': 'noite',
+                'grazie': 'obrigado', 'per favore': 'por favor',
+                'sì': 'sim', 'no': 'não', 'forse': 'talvez',
+                'oggi': 'hoje', 'ieri': 'ontem', 'domani': 'amanhã',
+                'adesso': 'agora', 'dopo': 'depois', 'prima': 'antes',
+                'tutto': 'tudo', 'bene': 'bem', 'molto': 'muito', 'poco': 'pouco',
+                'casa': 'casa', 'lavoro': 'trabalho', 'scuola': 'escola', 'famiglia': 'família',
+                'amico': 'amigo', 'amore': 'amor', 'tempo': 'tempo', 'vita': 'vida',
+                'mondo': 'mundo', 'persona': 'pessoa', 'cosa': 'coisa', 'luogo': 'lugar',
+                'test': 'teste', 'libro': 'livro', 'macchina': 'carro', 'cibo': 'comida', 'acqua': 'água'
+            },
+            // Português - Russo
+            'pt-ru': {
+                'olá': 'привет', 'oi': 'привет', 'tchau': 'пока', 'adeus': 'до свидания',
+                'bom': 'хороший', 'boa': 'хорошая', 'dia': 'день', 'tarde': 'день', 'noite': 'ночь',
+                'obrigado': 'спасибо', 'obrigada': 'спасибо', 'por favor': 'пожалуйста',
+                'sim': 'да', 'não': 'нет', 'talvez': 'может быть',
+                'hoje': 'сегодня', 'ontem': 'вчера', 'amanhã': 'завтра',
+                'agora': 'сейчас', 'depois': 'потом', 'antes': 'до',
+                'tudo': 'всё', 'bem': 'хорошо', 'muito': 'очень', 'pouco': 'мало',
+                'casa': 'дом', 'trabalho': 'работа', 'escola': 'школа', 'família': 'семья',
+                'amigo': 'друг', 'amor': 'любовь', 'tempo': 'время', 'vida': 'жизнь',
+                'mundo': 'мир', 'pessoa': 'человек', 'coisa': 'вещь', 'lugar': 'место',
+                'teste': 'тест', 'livro': 'книга', 'carro': 'машина', 'comida': 'еда', 'água': 'вода'
+            },
+            'ru-pt': {
+                'привет': 'olá', 'пока': 'tchau', 'до свидания': 'adeus',
+                'хороший': 'bom', 'хорошая': 'boa', 'день': 'dia', 'ночь': 'noite',
+                'спасибо': 'obrigado', 'пожалуйста': 'por favor',
+                'да': 'sim', 'нет': 'não', 'может быть': 'talvez',
+                'сегодня': 'hoje', 'вчера': 'ontem', 'завтра': 'amanhã',
+                'сейчас': 'agora', 'потом': 'depois', 'до': 'antes',
+                'всё': 'tudo', 'хорошо': 'bem', 'очень': 'muito', 'мало': 'pouco',
+                'дом': 'casa', 'работа': 'trabalho', 'школа': 'escola', 'семья': 'família',
+                'друг': 'amigo', 'любовь': 'amor', 'время': 'tempo', 'жизнь': 'vida',
+                'мир': 'mundo', 'человек': 'pessoa', 'вещь': 'coisa', 'место': 'lugar',
+                'тест': 'teste', 'книга': 'livro', 'машина': 'carro', 'еда': 'comida', 'вода': 'água'
+            },
+            // Inglês - Espanhol
+            'en-es': {
+                'hello': 'hola', 'hi': 'hola', 'bye': 'adiós', 'goodbye': 'adiós',
+                'good': 'bueno', 'day': 'día', 'afternoon': 'tarde', 'night': 'noche',
+                'thank you': 'gracias', 'please': 'por favor',
+                'yes': 'sí', 'no': 'no', 'maybe': 'quizás',
+                'today': 'hoy', 'yesterday': 'ayer', 'tomorrow': 'mañana',
+                'now': 'ahora', 'later': 'después', 'before': 'antes',
+                'everything': 'todo', 'well': 'bien', 'very': 'muy', 'little': 'poco',
+                'house': 'casa', 'work': 'trabajo', 'school': 'escuela', 'family': 'familia',
+                'friend': 'amigo', 'love': 'amor', 'time': 'tiempo', 'life': 'vida',
+                'world': 'mundo', 'person': 'persona', 'thing': 'cosa', 'place': 'lugar',
+                'test': 'prueba', 'book': 'libro', 'car': 'coche', 'food': 'comida', 'water': 'agua'
+            },
+            'es-en': {
+                'hola': 'hello', 'adiós': 'goodbye',
+                'bueno': 'good', 'día': 'day', 'tarde': 'afternoon', 'noche': 'night',
+                'gracias': 'thank you', 'por favor': 'please',
+                'sí': 'yes', 'no': 'no', 'quizás': 'maybe',
+                'hoy': 'today', 'ayer': 'yesterday', 'mañana': 'tomorrow',
+                'ahora': 'now', 'después': 'later', 'antes': 'before',
+                'todo': 'everything', 'bien': 'well', 'muy': 'very', 'poco': 'little',
+                'casa': 'house', 'trabajo': 'work', 'escuela': 'school', 'familia': 'family',
+                'amigo': 'friend', 'amor': 'love', 'tiempo': 'time', 'vida': 'life',
+                'mundo': 'world', 'persona': 'person', 'cosa': 'thing', 'lugar': 'place',
+                'prueba': 'test', 'libro': 'book', 'coche': 'car', 'comida': 'food', 'agua': 'water'
             }
         };
     }
