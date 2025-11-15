@@ -539,7 +539,13 @@ class ChatManager {
             messageDiv.innerHTML = `
                 <div>${content}</div>
                 <div class="message-actions">
-                    <button class="copy-btn" onclick="navigator.clipboard.writeText('${escapedContent}'); this.textContent='✓ Copiado!';">📋 Copiar</button>
+                    <button class="copy-btn" onclick="navigator.clipboard.writeText('${escapedContent}'); this.innerHTML='<svg width=\\'16\\' height=\\'16\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\'><polyline points=\\'20 6 9 17 4 12\\'/></svg> Copiado!';">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                        </svg>
+                        Copiar
+                    </button>
                 </div>
             `;
         }
@@ -1263,24 +1269,59 @@ class TranscriptionManager {
         URL.revokeObjectURL(url);
     }
 
-    // Live translation
+    // Live translation - Offline dictionary-based
     async translateLive(text) {
         const targetLang = document.getElementById('live-translation-lang').value;
         const translationPanel = document.getElementById('live-translation-text');
         
         try {
-            const response = await fetch('/api/transcription/translate-live', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, targetLang })
-            });
-            
-            const data = await response.json();
-            if (data.translation) {
-                translationPanel.innerHTML = data.translation.replace(/\n/g, '<br>');
+            // Dicionário básico para traduções comuns
+            const dictionary = {
+                'pt-BR': { from: 'pt', to: 'pt' },
+                'en-US': {
+                    from: 'pt',
+                    words: {
+                        'olá': 'hello', 'oi': 'hi', 'bom dia': 'good morning', 'boa tarde': 'good afternoon',
+                        'boa noite': 'good evening', 'tchau': 'bye', 'obrigado': 'thank you', 'obrigada': 'thank you',
+                        'por favor': 'please', 'sim': 'yes', 'não': 'no', 'talvez': 'maybe',
+                        'hoje': 'today', 'ontem': 'yesterday', 'amanhã': 'tomorrow',
+                        'reunião': 'meeting', 'projeto': 'project', 'tarefa': 'task', 'trabalho': 'work'
+                    }
+                },
+                'es-ES': {
+                    from: 'pt',
+                    words: {
+                        'olá': 'hola', 'oi': 'hola', 'bom dia': 'buenos días', 'boa tarde': 'buenas tardes',
+                        'boa noite': 'buenas noches', 'tchau': 'adiós', 'obrigado': 'gracias', 'obrigada': 'gracias',
+                        'por favor': 'por favor', 'sim': 'sí', 'não': 'no', 'talvez': 'quizás',
+                        'hoje': 'hoy', 'ontem': 'ayer', 'amanhã': 'mañana',
+                        'reunião': 'reunión', 'projeto': 'proyecto', 'tarefa': 'tarea', 'trabalho': 'trabajo'
+                    }
+                }
+            };
+
+            if (targetLang === 'pt-BR') {
+                translationPanel.innerHTML = text.replace(/\n/g, '<br>');
+                return;
             }
+
+            const langDict = dictionary[targetLang];
+            if (!langDict) {
+                translationPanel.innerHTML = `<span style="color: var(--text-tertiary);">Tradução offline não disponível para ${targetLang}</span>`;
+                return;
+            }
+
+            // Tradução palavra por palavra usando dicionário
+            const words = text.toLowerCase().split(/\s+/);
+            const translated = words.map(word => {
+                const cleanWord = word.replace(/[.,!?;:]/g, '');
+                return langDict.words[cleanWord] || word;
+            });
+
+            translationPanel.innerHTML = translated.join(' ').replace(/\n/g, '<br>');
         } catch (error) {
             console.error('Error translating:', error);
+            translationPanel.innerHTML = text.replace(/\n/g, '<br>');
         }
     }
 
@@ -1313,7 +1354,14 @@ class TranscriptionManager {
         // Add question to chat
         const questionDiv = document.createElement('div');
         questionDiv.className = 'message user';
-        questionDiv.textContent = `🤖 Detectado: ${question}`;
+        questionDiv.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: middle;">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+            </svg>
+            <span>Detectado: ${question}</span>
+        `;
         messagesContainer.appendChild(questionDiv);
         
         // Get answer
@@ -1352,7 +1400,20 @@ class TranscriptionManager {
         
         const tooltip = document.createElement('div');
         tooltip.className = 'word-hover-tooltip';
-        tooltip.textContent = '🤖 Enviar para AI';
+        tooltip.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: middle;">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <span>Enviar para AI</span>
+        `;
         tooltip.style.left = event.pageX + 'px';
         tooltip.style.top = (event.pageY - 40) + 'px';
         
@@ -1409,7 +1470,7 @@ class TranscriptionManager {
                 
                 const data = await response.json();
                 if (data.analysis) {
-                    this.addChatMessage('ai', `📄 Análise de ${file.name}: ${data.analysis}`);
+                    this.addChatMessage('ai', `Análise de ${file.name}: ${data.analysis}`);
                 }
             } catch (error) {
                 console.error('Error analyzing file:', error);

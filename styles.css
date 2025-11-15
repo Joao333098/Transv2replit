@@ -1203,10 +1203,17 @@ body {
     z-index: 1000;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
 }
 
 .word-hover-tooltip:hover {
     background: var(--accent-color);
+}
+
+.word-hover-tooltip svg {
+    flex-shrink: 0;
 }
 
 /* Highlight marker (replaces **text**) */
