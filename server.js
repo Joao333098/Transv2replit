@@ -254,11 +254,33 @@ app.post('/api/transcription/process', async (req, res) => {
             return res.status(500).json({ error: 'Transcription API key não configurada' });
         }
 
-        const { text, language, action, useThinking = false } = req.body;
+        const { text, language, action, useThinking = false, useSearch = false, targetLang = null } = req.body;
 
+        // Validação
+        if (!text || text.trim().length === 0) {
+            return res.status(400).json({ error: 'Texto vazio' });
+        }
+
+        if (!action) {
+            return res.status(400).json({ error: 'Ação não especificada' });
+        }
+
+        // Mapear idiomas
+        const langMap = {
+            'pt-BR': 'português brasileiro',
+            'en-US': 'inglês americano',
+            'es-ES': 'espanhol',
+            'fr-FR': 'francês',
+            'de-DE': 'alemão',
+            'it-IT': 'italiano',
+            'ja-JP': 'japonês',
+            'zh-CN': 'chinês simplificado'
+        };
+
+        const currentLang = langMap[language] || 'português';
         let prompt = '';
-        const systemInstruction = `Você é um assistente especializado em processamento de linguagem natural e transcrições. 
-        Sempre responda em ${language === 'pt-BR' ? 'português' : language === 'en-US' ? 'inglês' : 'espanhol'}.`;
+        const systemInstruction = `Você é um assistente especializado em processamento de linguagem natural e análise de transcrições. 
+        Responda sempre em ${currentLang}, sendo preciso e objetivo.`;
 
         const config = {
             systemInstruction,
@@ -272,45 +294,59 @@ app.post('/api/transcription/process', async (req, res) => {
             config.thinkingConfig = { thinkingBudget: 0 };
         }
 
-        switch (action) {
-            case 'improve':
-                prompt = `Melhore esta transcrição corrigindo erros de gramática e tornando-a mais clara:\n\n${text}`;
-                break;
-            case 'summarize':
-                prompt = `Faça um resumo detalhado desta transcrição:\n\n${text}`;
-                break;
-            case 'keywords':
-                prompt = `Extraia as palavras-chave e conceitos principais desta transcrição em formato de lista:\n\n${text}`;
-                break;
-            case 'questions':
-                prompt = `Gere 5 perguntas importantes baseadas nesta transcrição:\n\n${text}`;
-                break;
-            case 'translate':
-                const targetLang = language === 'pt-BR' ? 'inglês' : 'português';
-                prompt = `Traduza esta transcrição para ${targetLang}:\n\n${text}`;
-                break;
-            case 'topics':
-                prompt = `Identifique e liste os principais tópicos discutidos nesta transcrição:\n\n${text}`;
-                break;
-            case 'sentiment':
-                prompt = `Analise o sentimento geral desta transcrição (positivo, neutro, negativo) e explique:\n\n${text}`;
-                break;
-            case 'entities':
-                prompt = `Identifique e liste todas as pessoas, lugares, organizações e datas mencionadas:\n\n${text}`;
-                break;
-            case 'action-items':
-                prompt = `Extraia todos os itens de ação, tarefas e decisões mencionadas:\n\n${text}`;
-                break;
-            case 'minutes':
-                prompt = `Crie uma ata de reunião formatada com tópicos, decisões e próximos passos:\n\n${text}`;
-                break;
-            default:
-                return res.status(400).json({ error: 'Ação não reconhecida' });
+        // Apply search grounding if enabled
+        if (useSearch) {
+            config.tools = [{ googleSearch: {} }];
         }
 
-        // Apply search grounding if enabled
-        if (useSearch || action === 'fact-check' || action === 'context') {
-            config.tools = [{ googleSearch: {} }];
+        switch (action) {
+            case 'improve':
+                prompt = `Melhore o seguinte texto corrigindo erros gramaticais, ortográficos e de pontuação. Torne-o mais claro e fluido, mantendo o significado original:\n\n${text}`;
+                break;
+            
+            case 'summarize':
+                prompt = `Crie um resumo detalhado e bem estruturado do seguinte texto. Organize em tópicos principais se houver vários assuntos:\n\n${text}`;
+                break;
+            
+            case 'keywords':
+                prompt = `Extraia as palavras-chave e conceitos mais importantes do texto. Liste em formato de bullet points, do mais relevante ao menos relevante:\n\n${text}`;
+                break;
+            
+            case 'questions':
+                prompt = `Gere 5 perguntas relevantes e importantes baseadas no conteúdo do texto. As perguntas devem testar a compreensão dos pontos principais:\n\n${text}`;
+                break;
+            
+            case 'translate':
+                if (!targetLang) {
+                    return res.status(400).json({ error: 'Idioma de destino não especificado' });
+                }
+                const targetLanguage = langMap[targetLang] || 'inglês';
+                prompt = `Traduza o seguinte texto para ${targetLanguage} de forma natural e fluente:\n\n${text}`;
+                config.temperature = 0.2; // Mais determinístico para traduções
+                break;
+            
+            case 'topics':
+                prompt = `Identifique e liste os principais tópicos e temas discutidos no texto. Organize em categorias se aplicável:\n\n${text}`;
+                break;
+            
+            case 'sentiment':
+                prompt = `Analise o sentimento geral do texto (positivo, neutro ou negativo). Explique sua análise e cite trechos específicos que justificam sua conclusão:\n\n${text}`;
+                break;
+            
+            case 'entities':
+                prompt = `Identifique e liste de forma organizada:\n- Pessoas mencionadas\n- Lugares\n- Organizações/Empresas\n- Datas e eventos importantes\n\nTexto:\n${text}`;
+                break;
+            
+            case 'action-items':
+                prompt = `Extraia todos os itens de ação, tarefas, compromissos e decisões mencionados no texto. Liste em formato de checklist:\n\n${text}`;
+                break;
+            
+            case 'minutes':
+                prompt = `Crie uma ata de reunião profissional e bem formatada com as seguintes seções:\n1. Participantes (se mencionados)\n2. Tópicos Discutidos\n3. Decisões Tomadas\n4. Itens de Ação\n5. Próximos Passos\n\nBasear na transcrição:\n${text}`;
+                break;
+            
+            default:
+                return res.status(400).json({ error: 'Ação não reconhecida: ' + action });
         }
 
         const response = await aiTranscription.models.generateContent({
@@ -319,11 +355,21 @@ app.post('/api/transcription/process', async (req, res) => {
             config
         });
 
-        const result = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        // Melhor tratamento de erros
+        if (!response || !response.candidates || response.candidates.length === 0) {
+            return res.status(500).json({ error: 'Nenhuma resposta gerada pela IA' });
+        }
+
+        const result = response.candidates[0]?.content?.parts?.[0]?.text || '';
+        
+        if (!result || result.trim().length === 0) {
+            return res.status(500).json({ error: 'Resposta vazia da IA' });
+        }
+
         res.json({ result });
     } catch (error) {
         console.error('Error processing transcription:', error);
-        res.status(500).json({ error: 'Erro ao processar transcrição' });
+        res.status(500).json({ error: 'Erro ao processar transcrição: ' + error.message });
     }
 });
 

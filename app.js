@@ -796,12 +796,33 @@ class TranscriptionManager {
             return;
         }
 
+        // Mostrar opções de tradução se a ação for traduzir
+        const translateOptions = document.getElementById('translate-options');
+        if (action === 'translate') {
+            if (translateOptions.style.display === 'none') {
+                translateOptions.style.display = 'block';
+                return;
+            }
+        } else {
+            translateOptions.style.display = 'none';
+        }
+
         // Get toggle states
         const useThinking = document.getElementById('transcript-thinking-toggle')?.checked || false;
         const useSearch = document.getElementById('transcript-search-toggle')?.checked || false;
 
+        // Get target language for translation
+        let targetLang = null;
+        if (action === 'translate') {
+            targetLang = document.getElementById('translate-target-lang').value;
+        }
+
         try {
-            this.aiResponse.textContent = 'Processando...';
+            // Disable all buttons during processing
+            const buttons = document.querySelectorAll('.ai-tool-btn');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            this.aiResponse.innerHTML = '<div style="text-align: center; color: var(--accent-color);">🤖 Processando...</div>';
 
             const response = await fetch('/api/transcription/process', {
                 method: 'POST',
@@ -811,19 +832,40 @@ class TranscriptionManager {
                     language: this.languageSelect.value,
                     action,
                     useThinking,
-                    useSearch
+                    useSearch,
+                    targetLang
                 })
             });
 
             const data = await response.json();
+            
             if (data.error) {
-                this.aiResponse.textContent = 'Erro: ' + data.error;
+                this.aiResponse.innerHTML = `<div style="color: var(--error-color);">❌ Erro: ${data.error}</div>`;
+            } else if (data.result) {
+                // Format result based on action
+                let formattedResult = data.result;
+                
+                if (action === 'keywords' || action === 'topics' || action === 'entities') {
+                    // Format lists better
+                    formattedResult = formattedResult.replace(/\n/g, '<br>');
+                } else if (action === 'action-items') {
+                    formattedResult = formattedResult.replace(/\n/g, '<br>');
+                } else {
+                    formattedResult = formattedResult.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+                    formattedResult = '<p>' + formattedResult + '</p>';
+                }
+                
+                this.aiResponse.innerHTML = formattedResult;
             } else {
-                this.aiResponse.innerHTML = data.result.replace(/\n/g, '<br>') || 'Sem resultado';
+                this.aiResponse.innerHTML = '<div style="color: var(--text-tertiary);">Sem resultado</div>';
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.aiResponse.textContent = 'Erro ao processar solicitação: ' + error.message;
+            this.aiResponse.innerHTML = `<div style="color: var(--error-color);">❌ Erro ao processar: ${error.message}</div>`;
+        } finally {
+            // Re-enable buttons
+            const buttons = document.querySelectorAll('.ai-tool-btn');
+            buttons.forEach(btn => btn.disabled = false);
         }
     }
 
