@@ -400,6 +400,11 @@ class ChatManager {
         
         // History button
         document.getElementById('chat-history-btn')?.addEventListener('click', () => this.showChatHistory());
+        
+        // Close chat history modal
+        document.getElementById('close-chat-history-modal')?.addEventListener('click', () => {
+            document.getElementById('chat-history-modal').style.display = 'none';
+        });
 
         this.loadHistory();
     }
@@ -425,26 +430,31 @@ class ChatManager {
     }
 
     showChatHistory() {
+        const modal = document.getElementById('chat-history-modal');
+        const listContainer = document.getElementById('chat-history-list');
+        
         const chatHistory = JSON.parse(localStorage.getItem('shared-chat-history') || '[]')
             .filter(item => item.type === 'chat');
         
         if (chatHistory.length === 0) {
-            alert('Nenhum histórico de chat encontrado.');
-            return;
+            listContainer.innerHTML = '<p style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nenhuma conversa salva</p>';
+        } else {
+            listContainer.innerHTML = chatHistory.map((item, index) => `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        <div class="history-item-title">Conversa ${index + 1}</div>
+                        <div class="history-item-date">${item.date}</div>
+                    </div>
+                    <div class="history-item-preview">${item.messages[0]?.content.substring(0, 150) || 'Conversa vazia'}...</div>
+                    <div class="history-item-actions">
+                        <button onclick="chat.loadChatFromHistory(${index})">Carregar</button>
+                        <button onclick="chat.deleteChatHistory(${index})">Excluir</button>
+                    </div>
+                </div>
+            `).join('');
         }
         
-        const historyHtml = chatHistory.map((item, index) => `
-            <div class="history-item-card" onclick="chat.loadChatFromHistory(${index})">
-                <div class="history-item-header">
-                    <strong>Conversa ${index + 1}</strong>
-                    <span style="font-size: 12px; color: var(--text-tertiary);">${item.date}</span>
-                </div>
-                <div class="history-item-preview">${item.messages[0]?.content.substring(0, 100)}...</div>
-            </div>
-        `).join('');
-        
-        // Show in modal or sidebar
-        alert('Histórico:\n\n' + chatHistory.map((h, i) => `${i + 1}. ${h.date}`).join('\n'));
+        modal.style.display = 'flex';
     }
 
     loadChatFromHistory(index) {
@@ -456,6 +466,24 @@ class ChatManager {
         
         this.messages = item.messages;
         this.renderMessages();
+        document.getElementById('chat-history-modal').style.display = 'none';
+    }
+    
+    deleteChatHistory(index) {
+        if (!confirm('Deseja excluir esta conversa?')) return;
+        
+        const chatHistory = JSON.parse(localStorage.getItem('shared-chat-history') || '[]');
+        const chatOnlyHistory = chatHistory.filter(item => item.type === 'chat');
+        const itemToDelete = chatOnlyHistory[index];
+        
+        // Remove item from full history
+        const indexInFull = chatHistory.indexOf(itemToDelete);
+        if (indexInFull > -1) {
+            chatHistory.splice(indexInFull, 1);
+            localStorage.setItem('shared-chat-history', JSON.stringify(chatHistory));
+        }
+        
+        this.showChatHistory();
     }
 
     async sendMessage() {
