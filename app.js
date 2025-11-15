@@ -751,8 +751,8 @@ class TranscriptionManager {
             document.getElementById('translation-modal').style.display = 'none';
         });
         
-        // Chat translation button
-        document.getElementById('chat-translation-btn')?.addEventListener('click', () => {
+        // Transcript translation button
+        document.getElementById('transcript-translation-btn')?.addEventListener('click', () => {
             this.openTranslationModal();
         });
 
