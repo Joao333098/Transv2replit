@@ -1318,7 +1318,7 @@ class TranscriptionManager {
         URL.revokeObjectURL(url);
     }
 
-    // Dicionário offline expandido
+    // Dicionário offline expandido bidirecional
     getDictionary() {
         return {
             'pt-en': {
@@ -1334,23 +1334,14 @@ class TranscriptionManager {
                 'ser': 'to be', 'estar': 'to be', 'ter': 'to have', 'fazer': 'to do/make',
                 'ir': 'to go', 'vir': 'to come', 'ver': 'to see', 'dar': 'to give',
                 'saber': 'to know', 'poder': 'can/may', 'querer': 'to want',
+                'falar': 'to speak', 'comer': 'to eat', 'beber': 'to drink',
                 // Substantivos
                 'casa': 'house', 'trabalho': 'work', 'escola': 'school', 'família': 'family',
                 'amigo': 'friend', 'amor': 'love', 'tempo': 'time/weather', 'vida': 'life',
                 'mundo': 'world', 'pessoa': 'person', 'coisa': 'thing', 'lugar': 'place',
                 'reunião': 'meeting', 'projeto': 'project', 'tarefa': 'task',
+                'livro': 'book', 'carro': 'car', 'comida': 'food', 'água': 'water',
                 'test': 'teste', 'teste': 'test'
-            },
-            'pt-es': {
-                'olá': 'hola', 'oi': 'hola', 'tchau': 'adiós', 'adeus': 'adiós',
-                'bom': 'bueno', 'boa': 'buena', 'dia': 'día', 'tarde': 'tarde', 'noite': 'noche',
-                'obrigado': 'gracias', 'obrigada': 'gracias', 'por favor': 'por favor',
-                'sim': 'sí', 'não': 'no', 'talvez': 'quizás',
-                'hoje': 'hoy', 'ontem': 'ayer', 'amanhã': 'mañana',
-                'tudo': 'todo', 'bem': 'bien', 'muito': 'mucho', 'pouco': 'poco',
-                'casa': 'casa', 'trabalho': 'trabajo', 'escola': 'escuela', 'família': 'familia',
-                'reunião': 'reunión', 'projeto': 'proyecto', 'tarefa': 'tarea',
-                'test': 'prueba', 'teste': 'prueba'
             },
             'en-pt': {
                 'hello': 'olá', 'hi': 'oi', 'bye': 'tchau', 'goodbye': 'adeus',
@@ -1358,15 +1349,89 @@ class TranscriptionManager {
                 'thank you': 'obrigado', 'please': 'por favor',
                 'yes': 'sim', 'no': 'não', 'maybe': 'talvez',
                 'today': 'hoje', 'yesterday': 'ontem', 'tomorrow': 'amanhã',
+                'now': 'agora', 'later': 'depois', 'before': 'antes',
                 'everything': 'tudo', 'well': 'bem', 'very': 'muito', 'little': 'pouco',
+                'to be': 'ser/estar', 'to have': 'ter', 'to do': 'fazer', 'to make': 'fazer',
+                'to go': 'ir', 'to come': 'vir', 'to see': 'ver', 'to give': 'dar',
+                'to know': 'saber', 'can': 'poder', 'to want': 'querer',
+                'to speak': 'falar', 'to eat': 'comer', 'to drink': 'beber',
                 'house': 'casa', 'work': 'trabalho', 'school': 'escola', 'family': 'família',
+                'friend': 'amigo', 'love': 'amor', 'time': 'tempo', 'weather': 'tempo', 'life': 'vida',
+                'world': 'mundo', 'person': 'pessoa', 'thing': 'coisa', 'place': 'lugar',
                 'meeting': 'reunião', 'project': 'projeto', 'task': 'tarefa',
+                'book': 'livro', 'car': 'carro', 'food': 'comida', 'water': 'água',
                 'test': 'teste'
             }
         };
     }
 
-    // Handle translation modal tools
+    // Extrair palavra entre aspas da resposta da IA
+    extractWordFromAI(text) {
+        const match = text.match(/"([^"]+)"/);
+        return match ? match[1] : text;
+    }
+
+    // Dicionário expandido bidirecional para ferramentas
+    getToolDictionary() {
+        return {
+            'pt': {
+                'synonyms': {
+                    'bom': ['ótimo', 'excelente', 'positivo', 'agradável'],
+                    'casa': ['residência', 'lar', 'moradia', 'domicílio'],
+                    'trabalho': ['emprego', 'ocupação', 'serviço', 'labor'],
+                    'feliz': ['alegre', 'contente', 'satisfeito'],
+                    'rápido': ['veloz', 'ágil', 'ligeiro']
+                },
+                'antonyms': {
+                    'bom': ['ruim', 'mal', 'negativo'],
+                    'sim': ['não'],
+                    'hoje': ['ontem', 'amanhã'],
+                    'feliz': ['triste', 'infeliz'],
+                    'rápido': ['lento', 'devagar']
+                },
+                'definitions': {
+                    'casa': 'Edifício destinado à habitação; residência, lar.',
+                    'trabalho': 'Atividade profissional; emprego, ocupação.',
+                    'amor': 'Sentimento de afeição profunda; carinho.',
+                    'feliz': 'Que sente ou expressa felicidade; contente, alegre.'
+                },
+                'examples': {
+                    'casa': ['Eu vou para casa.', 'Minha casa é grande.'],
+                    'trabalho': ['Vou ao trabalho de manhã.', 'O trabalho está difícil.'],
+                    'feliz': ['Estou muito feliz hoje.', 'Ela ficou feliz com a notícia.']
+                }
+            },
+            'en': {
+                'synonyms': {
+                    'good': ['great', 'excellent', 'positive', 'pleasant'],
+                    'house': ['home', 'residence', 'dwelling'],
+                    'work': ['job', 'occupation', 'employment'],
+                    'happy': ['joyful', 'cheerful', 'glad'],
+                    'fast': ['quick', 'rapid', 'swift']
+                },
+                'antonyms': {
+                    'good': ['bad', 'poor', 'negative'],
+                    'yes': ['no'],
+                    'today': ['yesterday', 'tomorrow'],
+                    'happy': ['sad', 'unhappy'],
+                    'fast': ['slow']
+                },
+                'definitions': {
+                    'house': 'A building for human habitation; a residence.',
+                    'work': 'Activity involving mental or physical effort; employment.',
+                    'love': 'An intense feeling of deep affection.',
+                    'happy': 'Feeling or showing pleasure or contentment.'
+                },
+                'examples': {
+                    'house': ['I am going home.', 'My house is big.'],
+                    'work': ['I go to work in the morning.', 'Work is difficult.'],
+                    'happy': ['I am very happy today.', 'She was happy with the news.']
+                }
+            }
+        };
+    }
+
+    // Handle translation modal tools com IA
     async handleTranslationTool(tool) {
         const word = document.getElementById('translation-word-input').value.trim();
         const sourceLang = document.getElementById('translation-source-lang').value;
@@ -1379,79 +1444,122 @@ class TranscriptionManager {
         }
 
         const dict = this.getDictionary();
+        const toolDict = this.getToolDictionary();
         const dictKey = `${sourceLang}-${targetLang}`;
         const lowerWord = word.toLowerCase();
 
         let result = '';
+        resultArea.innerHTML = '<div style="text-align: center; color: var(--accent-color);">⏳ Processando...</div>';
 
-        switch (tool) {
-            case 'translate':
-                const translation = dict[dictKey]?.[lowerWord] || 'Tradução não encontrada';
-                result = `<div class="translation-result-item"><strong>Tradução:</strong> ${translation}</div>`;
-                break;
+        try {
+            switch (tool) {
+                case 'translate':
+                    const translation = dict[dictKey]?.[lowerWord];
+                    if (translation) {
+                        result = `<div class="translation-result-item"><strong>Tradução:</strong> ${translation}</div>`;
+                    } else {
+                        // Usar IA
+                        const aiResponse = await this.callTranslationAPI(`Traduza apenas a palavra "${word}" de ${sourceLang} para ${targetLang}. Responda APENAS com a tradução entre aspas, exemplo: "translation"`);
+                        const extracted = this.extractWordFromAI(aiResponse);
+                        result = `<div class="translation-result-item"><strong>Tradução (IA):</strong> ${extracted}</div>`;
+                    }
+                    break;
 
-            case 'synonyms':
-                const synonyms = {
-                    'bom': ['ótimo', 'excelente', 'positivo', 'agradável'],
-                    'casa': ['residência', 'lar', 'moradia', 'domicílio'],
-                    'trabalho': ['emprego', 'ocupação', 'serviço', 'labor']
-                };
-                const syns = synonyms[lowerWord] || ['Não encontrado'];
-                result = `<div class="translation-result-item"><strong>Sinônimos:</strong><ul>${syns.map(s => `<li>${s}</li>`).join('')}</ul></div>`;
-                break;
+                case 'synonyms':
+                    const syns = toolDict[sourceLang]?.synonyms?.[lowerWord];
+                    if (syns) {
+                        result = `<div class="translation-result-item"><strong>Sinônimos:</strong><ul>${syns.map(s => `<li>${s}</li>`).join('')}</ul></div>`;
+                    } else {
+                        const aiResponse = await this.callTranslationAPI(`Liste 5 sinônimos para a palavra "${word}" em ${sourceLang}. Responda apenas com as palavras separadas por vírgula.`);
+                        const synList = aiResponse.split(',').map(s => s.trim().replace(/"/g, ''));
+                        result = `<div class="translation-result-item"><strong>Sinônimos (IA):</strong><ul>${synList.map(s => `<li>${s}</li>`).join('')}</ul></div>`;
+                    }
+                    break;
 
-            case 'antonyms':
-                const antonyms = {
-                    'bom': ['ruim', 'mal', 'negativo'],
-                    'sim': ['não'],
-                    'hoje': ['ontem', 'amanhã']
-                };
-                const ants = antonyms[lowerWord] || ['Não encontrado'];
-                result = `<div class="translation-result-item"><strong>Antônimos:</strong><ul>${ants.map(a => `<li>${a}</li>`).join('')}</ul></div>`;
-                break;
+                case 'antonyms':
+                    const ants = toolDict[sourceLang]?.antonyms?.[lowerWord];
+                    if (ants) {
+                        result = `<div class="translation-result-item"><strong>Antônimos:</strong><ul>${ants.map(a => `<li>${a}</li>`).join('')}</ul></div>`;
+                    } else {
+                        const aiResponse = await this.callTranslationAPI(`Liste 3 antônimos para a palavra "${word}" em ${sourceLang}. Responda apenas com as palavras separadas por vírgula.`);
+                        const antList = aiResponse.split(',').map(a => a.trim().replace(/"/g, ''));
+                        result = `<div class="translation-result-item"><strong>Antônimos (IA):</strong><ul>${antList.map(a => `<li>${a}</li>`).join('')}</ul></div>`;
+                    }
+                    break;
 
-            case 'definition':
-                const definitions = {
-                    'casa': 'Edifício destinado à habitação; residência, lar.',
-                    'trabalho': 'Atividade profissional; emprego, ocupação.',
-                    'amor': 'Sentimento de afeição profunda; carinho.'
-                };
-                const def = definitions[lowerWord] || 'Definição não disponível offline.';
-                result = `<div class="translation-result-item"><strong>Definição:</strong><p>${def}</p></div>`;
-                break;
+                case 'definition':
+                    const def = toolDict[sourceLang]?.definitions?.[lowerWord];
+                    if (def) {
+                        result = `<div class="translation-result-item"><strong>Definição:</strong><p>${def}</p></div>`;
+                    } else {
+                        const aiResponse = await this.callTranslationAPI(`Defina a palavra "${word}" em ${sourceLang} de forma concisa (máximo 2 linhas).`);
+                        result = `<div class="translation-result-item"><strong>Definição (IA):</strong><p>${aiResponse}</p></div>`;
+                    }
+                    break;
 
-            case 'examples':
-                const examples = {
-                    'casa': ['Eu vou para casa.', 'Minha casa é grande.'],
-                    'trabalho': ['Vou ao trabalho de manhã.', 'O trabalho está difícil.']
-                };
-                const exs = examples[lowerWord] || ['Exemplos não disponíveis'];
-                result = `<div class="translation-result-item"><strong>Exemplos:</strong><ul>${exs.map(e => `<li>${e}</li>`).join('')}</ul></div>`;
-                break;
+                case 'examples':
+                    const exs = toolDict[sourceLang]?.examples?.[lowerWord];
+                    if (exs) {
+                        result = `<div class="translation-result-item"><strong>Exemplos:</strong><ul>${exs.map(e => `<li>${e}</li>`).join('')}</ul></div>`;
+                    } else {
+                        const aiResponse = await this.callTranslationAPI(`Forneça 3 frases de exemplo usando a palavra "${word}" em ${sourceLang}. Liste uma por linha.`);
+                        const exList = aiResponse.split('\n').filter(e => e.trim()).map(e => e.replace(/^\d+\.\s*/, '').trim());
+                        result = `<div class="translation-result-item"><strong>Exemplos (IA):</strong><ul>${exList.map(e => `<li>${e}</li>`).join('')}</ul></div>`;
+                    }
+                    break;
 
-            case 'conjugation':
-                result = `<div class="translation-result-item"><strong>Conjugação:</strong><p>Presente: ${lowerWord}o, ${lowerWord}s, ${lowerWord}</p></div>`;
-                break;
+                case 'conjugation':
+                    const aiResponse = await this.callTranslationAPI(`Conjugue o verbo "${word}" no presente do indicativo em ${sourceLang}. Liste apenas: eu, tu/você, ele/ela.`);
+                    result = `<div class="translation-result-item"><strong>Conjugação (IA):</strong><p>${aiResponse.replace(/\n/g, '<br>')}</p></div>`;
+                    break;
 
-            case 'plural':
-                const plural = lowerWord.endsWith('s') ? lowerWord : lowerWord + 's';
-                result = `<div class="translation-result-item"><strong>Plural:</strong> ${plural}</div>`;
-                break;
+                case 'plural':
+                    const pluralAI = await this.callTranslationAPI(`Qual é o plural de "${word}" em ${sourceLang}? Responda APENAS com a palavra no plural entre aspas.`);
+                    const pluralWord = this.extractWordFromAI(pluralAI);
+                    result = `<div class="translation-result-item"><strong>Plural (IA):</strong> ${pluralWord}</div>`;
+                    break;
 
-            case 'pronunciation':
-                result = `<div class="translation-result-item"><strong>Pronúncia (IPA):</strong> /${lowerWord}/</div>`;
-                break;
+                case 'pronunciation':
+                    const pronAI = await this.callTranslationAPI(`Como se pronuncia "${word}" em ${sourceLang}? Forneça a pronúncia em IPA (International Phonetic Alphabet).`);
+                    result = `<div class="translation-result-item"><strong>Pronúncia (IA):</strong> ${pronAI}</div>`;
+                    break;
 
-            case 'idioms':
-                result = `<div class="translation-result-item"><strong>Expressões:</strong><p>Expressões idiomáticas não disponíveis offline.</p></div>`;
-                break;
+                case 'idioms':
+                    const idiomsAI = await this.callTranslationAPI(`Liste 3 expressões idiomáticas ou frases comuns usando a palavra "${word}" em ${sourceLang}.`);
+                    result = `<div class="translation-result-item"><strong>Expressões (IA):</strong><p>${idiomsAI.replace(/\n/g, '<br>')}</p></div>`;
+                    break;
 
-            case 'related':
-                result = `<div class="translation-result-item"><strong>Palavras Relacionadas:</strong><p>Palavras relacionadas não disponíveis offline.</p></div>`;
-                break;
+                case 'related':
+                    const relatedAI = await this.callTranslationAPI(`Liste 5 palavras relacionadas ou da mesma família de "${word}" em ${sourceLang}. Separe por vírgula.`);
+                    const relList = relatedAI.split(',').map(r => r.trim().replace(/"/g, ''));
+                    result = `<div class="translation-result-item"><strong>Palavras Relacionadas (IA):</strong><ul>${relList.map(r => `<li>${r}</li>`).join('')}</ul></div>`;
+                    break;
+            }
+
+            resultArea.innerHTML = result;
+        } catch (error) {
+            console.error('Erro na ferramenta de tradução:', error);
+            resultArea.innerHTML = '<div style="color: var(--error-color);">❌ Erro ao processar</div>';
         }
+    }
 
-        resultArea.innerHTML = result;
+    // Chamar API de tradução/NLP
+    async callTranslationAPI(prompt) {
+        const response = await fetch('/api/transcription/process', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text: prompt,
+                language: 'pt-BR',
+                action: 'improve',
+                useThinking: false,
+                useSearch: false
+            })
+        });
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        return data.result || '';
     }
 
     // Live translation - Offline dictionary-based
