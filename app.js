@@ -743,13 +743,13 @@ class TranscriptionManager {
             panel.style.display = e.target.checked ? 'block' : 'none';
         });
 
-        // Upload file for analysis
-        document.getElementById('upload-transcript-file-btn')?.addEventListener('click', () => {
-            document.getElementById('transcript-file-input').click();
+        // Translation modal
+        document.getElementById('close-translation-modal')?.addEventListener('click', () => {
+            document.getElementById('translation-modal').style.display = 'none';
         });
 
-        document.getElementById('transcript-file-input')?.addEventListener('change', (e) => {
-            this.handleFileUpload(e.target.files);
+        document.querySelectorAll('.translation-tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.handleTranslationTool(btn.dataset.tool));
         });
 
         // Word hover for AI context
@@ -908,6 +908,10 @@ class TranscriptionManager {
         }
     }
 
+    openTranslationModal() {
+        document.getElementById('translation-modal').style.display = 'flex';
+    }
+
     async handleAIAction(action) {
         const transcript = this.currentTranscript.trim();
         if (!transcript) {
@@ -917,17 +921,6 @@ class TranscriptionManager {
 
         // Aplicar marcadores (converter **texto** em destaque)
         this.applyHighlightMarkers();
-
-        // Mostrar opções de tradução se a ação for traduzir
-        const translateOptions = document.getElementById('translate-options');
-        if (action === 'translate') {
-            if (translateOptions.style.display === 'none') {
-                translateOptions.style.display = 'block';
-                return;
-            }
-        } else {
-            translateOptions.style.display = 'none';
-        }
 
         // Get toggle states
         const useThinking = document.getElementById('transcript-thinking-toggle')?.checked || false;
@@ -1269,60 +1262,157 @@ class TranscriptionManager {
         URL.revokeObjectURL(url);
     }
 
+    // Dicionário offline expandido
+    getDictionary() {
+        return {
+            'pt-en': {
+                // Palavras comuns
+                'olá': 'hello', 'oi': 'hi', 'tchau': 'bye', 'adeus': 'goodbye',
+                'bom': 'good', 'dia': 'day', 'tarde': 'afternoon', 'noite': 'night',
+                'obrigado': 'thank you', 'obrigada': 'thank you', 'por favor': 'please',
+                'sim': 'yes', 'não': 'no', 'talvez': 'maybe',
+                'hoje': 'today', 'ontem': 'yesterday', 'amanhã': 'tomorrow',
+                'agora': 'now', 'depois': 'later', 'antes': 'before',
+                // Verbos
+                'ser': 'to be', 'estar': 'to be', 'ter': 'to have', 'fazer': 'to do/make',
+                'ir': 'to go', 'vir': 'to come', 'ver': 'to see', 'dar': 'to give',
+                'saber': 'to know', 'poder': 'can/may', 'querer': 'to want',
+                // Substantivos
+                'casa': 'house', 'trabalho': 'work', 'escola': 'school', 'família': 'family',
+                'amigo': 'friend', 'amor': 'love', 'tempo': 'time/weather', 'vida': 'life',
+                'mundo': 'world', 'pessoa': 'person', 'coisa': 'thing', 'lugar': 'place',
+                'reunião': 'meeting', 'projeto': 'project', 'tarefa': 'task'
+            },
+            'pt-es': {
+                'olá': 'hola', 'oi': 'hola', 'tchau': 'adiós', 'adeus': 'adiós',
+                'bom': 'bueno', 'dia': 'día', 'tarde': 'tarde', 'noite': 'noche',
+                'obrigado': 'gracias', 'obrigada': 'gracias', 'por favor': 'por favor',
+                'sim': 'sí', 'não': 'no', 'talvez': 'quizás',
+                'hoje': 'hoy', 'ontem': 'ayer', 'amanhã': 'mañana',
+                'casa': 'casa', 'trabalho': 'trabajo', 'escola': 'escuela', 'família': 'familia',
+                'reunião': 'reunión', 'projeto': 'proyecto', 'tarefa': 'tarea'
+            },
+            'en-pt': {
+                'hello': 'olá', 'hi': 'oi', 'bye': 'tchau', 'goodbye': 'adeus',
+                'good': 'bom', 'day': 'dia', 'afternoon': 'tarde', 'night': 'noite',
+                'thank you': 'obrigado', 'please': 'por favor',
+                'yes': 'sim', 'no': 'não', 'maybe': 'talvez',
+                'today': 'hoje', 'yesterday': 'ontem', 'tomorrow': 'amanhã',
+                'house': 'casa', 'work': 'trabalho', 'school': 'escola', 'family': 'família',
+                'meeting': 'reunião', 'project': 'projeto', 'task': 'tarefa'
+            }
+        };
+    }
+
+    // Handle translation modal tools
+    async handleTranslationTool(tool) {
+        const word = document.getElementById('translation-word-input').value.trim();
+        const sourceLang = document.getElementById('translation-source-lang').value;
+        const targetLang = document.getElementById('translation-target-lang-modal').value;
+        const resultArea = document.getElementById('translation-result');
+
+        if (!word) {
+            resultArea.innerHTML = '<div class="translation-placeholder"><p>Digite uma palavra primeiro</p></div>';
+            return;
+        }
+
+        const dict = this.getDictionary();
+        const dictKey = `${sourceLang}-${targetLang}`;
+        const lowerWord = word.toLowerCase();
+
+        let result = '';
+
+        switch (tool) {
+            case 'translate':
+                const translation = dict[dictKey]?.[lowerWord] || 'Tradução não encontrada';
+                result = `<div class="translation-result-item"><strong>Tradução:</strong> ${translation}</div>`;
+                break;
+
+            case 'synonyms':
+                const synonyms = {
+                    'bom': ['ótimo', 'excelente', 'positivo', 'agradável'],
+                    'casa': ['residência', 'lar', 'moradia', 'domicílio'],
+                    'trabalho': ['emprego', 'ocupação', 'serviço', 'labor']
+                };
+                const syns = synonyms[lowerWord] || ['Não encontrado'];
+                result = `<div class="translation-result-item"><strong>Sinônimos:</strong><ul>${syns.map(s => `<li>${s}</li>`).join('')}</ul></div>`;
+                break;
+
+            case 'antonyms':
+                const antonyms = {
+                    'bom': ['ruim', 'mal', 'negativo'],
+                    'sim': ['não'],
+                    'hoje': ['ontem', 'amanhã']
+                };
+                const ants = antonyms[lowerWord] || ['Não encontrado'];
+                result = `<div class="translation-result-item"><strong>Antônimos:</strong><ul>${ants.map(a => `<li>${a}</li>`).join('')}</ul></div>`;
+                break;
+
+            case 'definition':
+                const definitions = {
+                    'casa': 'Edifício destinado à habitação; residência, lar.',
+                    'trabalho': 'Atividade profissional; emprego, ocupação.',
+                    'amor': 'Sentimento de afeição profunda; carinho.'
+                };
+                const def = definitions[lowerWord] || 'Definição não disponível offline.';
+                result = `<div class="translation-result-item"><strong>Definição:</strong><p>${def}</p></div>`;
+                break;
+
+            case 'examples':
+                const examples = {
+                    'casa': ['Eu vou para casa.', 'Minha casa é grande.'],
+                    'trabalho': ['Vou ao trabalho de manhã.', 'O trabalho está difícil.']
+                };
+                const exs = examples[lowerWord] || ['Exemplos não disponíveis'];
+                result = `<div class="translation-result-item"><strong>Exemplos:</strong><ul>${exs.map(e => `<li>${e}</li>`).join('')}</ul></div>`;
+                break;
+
+            case 'conjugation':
+                result = `<div class="translation-result-item"><strong>Conjugação:</strong><p>Presente: ${lowerWord}o, ${lowerWord}s, ${lowerWord}</p></div>`;
+                break;
+
+            case 'plural':
+                const plural = lowerWord.endsWith('s') ? lowerWord : lowerWord + 's';
+                result = `<div class="translation-result-item"><strong>Plural:</strong> ${plural}</div>`;
+                break;
+
+            case 'pronunciation':
+                result = `<div class="translation-result-item"><strong>Pronúncia (IPA):</strong> /${lowerWord}/</div>`;
+                break;
+
+            case 'idioms':
+                result = `<div class="translation-result-item"><strong>Expressões:</strong><p>Expressões idiomáticas não disponíveis offline.</p></div>`;
+                break;
+
+            case 'related':
+                result = `<div class="translation-result-item"><strong>Palavras Relacionadas:</strong><p>Palavras relacionadas não disponíveis offline.</p></div>`;
+                break;
+        }
+
+        resultArea.innerHTML = result;
+    }
+
     // Live translation - Offline dictionary-based
     async translateLive(text) {
         const targetLang = document.getElementById('live-translation-lang').value;
         const translationPanel = document.getElementById('live-translation-text');
         
-        try {
-            // Dicionário básico para traduções comuns
-            const dictionary = {
-                'pt-BR': { from: 'pt', to: 'pt' },
-                'en-US': {
-                    from: 'pt',
-                    words: {
-                        'olá': 'hello', 'oi': 'hi', 'bom dia': 'good morning', 'boa tarde': 'good afternoon',
-                        'boa noite': 'good evening', 'tchau': 'bye', 'obrigado': 'thank you', 'obrigada': 'thank you',
-                        'por favor': 'please', 'sim': 'yes', 'não': 'no', 'talvez': 'maybe',
-                        'hoje': 'today', 'ontem': 'yesterday', 'amanhã': 'tomorrow',
-                        'reunião': 'meeting', 'projeto': 'project', 'tarefa': 'task', 'trabalho': 'work'
-                    }
-                },
-                'es-ES': {
-                    from: 'pt',
-                    words: {
-                        'olá': 'hola', 'oi': 'hola', 'bom dia': 'buenos días', 'boa tarde': 'buenas tardes',
-                        'boa noite': 'buenas noches', 'tchau': 'adiós', 'obrigado': 'gracias', 'obrigada': 'gracias',
-                        'por favor': 'por favor', 'sim': 'sí', 'não': 'no', 'talvez': 'quizás',
-                        'hoje': 'hoy', 'ontem': 'ayer', 'amanhã': 'mañana',
-                        'reunião': 'reunión', 'projeto': 'proyecto', 'tarefa': 'tarea', 'trabalho': 'trabajo'
-                    }
-                }
-            };
-
-            if (targetLang === 'pt-BR') {
-                translationPanel.innerHTML = text.replace(/\n/g, '<br>');
-                return;
-            }
-
-            const langDict = dictionary[targetLang];
-            if (!langDict) {
-                translationPanel.innerHTML = `<span style="color: var(--text-tertiary);">Tradução offline não disponível para ${targetLang}</span>`;
-                return;
-            }
-
-            // Tradução palavra por palavra usando dicionário
-            const words = text.toLowerCase().split(/\s+/);
-            const translated = words.map(word => {
-                const cleanWord = word.replace(/[.,!?;:]/g, '');
-                return langDict.words[cleanWord] || word;
-            });
-
-            translationPanel.innerHTML = translated.join(' ').replace(/\n/g, '<br>');
-        } catch (error) {
-            console.error('Error translating:', error);
+        const dict = this.getDictionary();
+        const dictKey = `pt-${targetLang.split('-')[0]}`;
+        
+        if (!dict[dictKey]) {
             translationPanel.innerHTML = text.replace(/\n/g, '<br>');
+            return;
         }
+
+        // Tradução palavra por palavra
+        const words = text.toLowerCase().split(/\s+/);
+        const translated = words.map(word => {
+            const cleanWord = word.replace(/[.,!?;:]/g, '');
+            return dict[dictKey][cleanWord] || word;
+        });
+
+        translationPanel.innerHTML = translated.join(' ').replace(/\n/g, '<br>');
     }
 
     // Auto-detect questions using NLP
@@ -1455,28 +1545,7 @@ class TranscriptionManager {
         this.transcriptText.innerHTML = highlighted;
     }
 
-    // Handle file upload (PDF/Image)
-    async handleFileUpload(files) {
-        for (const file of files) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('transcript', this.currentTranscript);
-            
-            try {
-                const response = await fetch('/api/transcription/analyze-file', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                if (data.analysis) {
-                    this.addChatMessage('ai', `Análise de ${file.name}: ${data.analysis}`);
-                }
-            } catch (error) {
-                console.error('Error analyzing file:', error);
-            }
-        }
-    }
+    
 }
 
 // Initialize app

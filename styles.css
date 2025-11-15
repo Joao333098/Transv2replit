@@ -1131,6 +1131,129 @@ body {
     overflow-y: auto;
 }
 
+/* Translation Modal Styles */
+.translation-modal-content {
+    max-width: 900px;
+    max-height: 85vh;
+}
+
+.translation-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.translation-input-section {
+    margin-bottom: 24px;
+}
+
+.translation-input {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.translation-input:focus {
+    border-color: var(--accent-color);
+}
+
+.translation-lang-selectors {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.translation-lang-selectors select {
+    flex: 1;
+}
+
+.translation-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.translation-tool-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.translation-tool-btn:hover {
+    background: linear-gradient(135deg, var(--accent-color), #667eea);
+    color: white;
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+}
+
+.translation-tool-btn svg {
+    flex-shrink: 0;
+}
+
+.translation-result-area {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.translation-placeholder {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.translation-placeholder svg {
+    margin-bottom: 16px;
+    color: var(--accent-color);
+}
+
+.translation-result-item {
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.translation-result-item strong {
+    color: var(--accent-color);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.translation-result-item ul {
+    list-style: none;
+    padding-left: 20px;
+}
+
+.translation-result-item li {
+    padding: 4px 0;
+    position: relative;
+}
+
+.translation-result-item li::before {
+    content: '•';
+    position: absolute;
+    left: -15px;
+    color: var(--accent-color);
+}
+
 .history-item-card {
     padding: 14px;
     background: var(--bg-secondary);

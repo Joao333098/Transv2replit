@@ -315,28 +315,14 @@
                             <button class="ai-tool-btn" data-action="summarize">Resumir</button>
                             <button class="ai-tool-btn" data-action="keywords">Palavras-chave</button>
                             <button class="ai-tool-btn" data-action="questions">Gerar Perguntas</button>
-                            <button class="ai-tool-btn" data-action="translate">Traduzir</button>
+                            <button class="ai-tool-btn" onclick="transcription.openTranslationModal()">Ferramentas de Tradução</button>
                             <button class="ai-tool-btn" data-action="topics">Identificar Tópicos</button>
                             <button class="ai-tool-btn" data-action="sentiment">Análise de Sentimento</button>
                             <button class="ai-tool-btn" data-action="action-items">Itens de Ação</button>
                             <button class="ai-tool-btn" data-action="entities">Entidades</button>
                             <button class="ai-tool-btn" data-action="minutes">Ata de Reunião</button>
                         </div>
-                        <div class="translate-options" id="translate-options" style="display: none; margin-top: 16px;">
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-secondary);">
-                                <span>Traduzir para:</span>
-                                <select id="translate-target-lang" class="select-input" style="flex: 1;">
-                                    <option value="pt-BR">Português (BR)</option>
-                                    <option value="en-US">Inglês (US)</option>
-                                    <option value="es-ES">Espanhol</option>
-                                    <option value="fr-FR">Francês</option>
-                                    <option value="de-DE">Alemão</option>
-                                    <option value="it-IT">Italiano</option>
-                                    <option value="ja-JP">Japonês</option>
-                                    <option value="zh-CN">Chinês</option>
-                                </select>
-                            </label>
-                        </div>
+                        
                         <div class="ai-response-area" id="ai-response"></div>
                     </div>
 
