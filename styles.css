@@ -1159,6 +1159,92 @@ body {
     line-height: 1.5;
 }
 
+/* Live Translation Panel */
+.live-translation-panel {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.translation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.translation-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.live-translation-text {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+/* Word Hover Tooltip */
+.word-hover-tooltip {
+    position: absolute;
+    background: var(--dark-bg);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.word-hover-tooltip:hover {
+    background: var(--accent-color);
+}
+
+/* Highlight marker (replaces **text**) */
+.highlight-marker {
+    background: linear-gradient(180deg, transparent 60%, #ffeb3b 60%);
+    padding: 2px 4px;
+    font-weight: 600;
+}
+
+/* Copy button in messages */
+.message-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.message:hover .message-actions {
+    opacity: 1;
+}
+
+.copy-btn {
+    padding: 4px 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
 /* Enhanced Toggle Switches */
 .toggle-switch {
     display: inline-flex;

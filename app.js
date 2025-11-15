@@ -394,8 +394,65 @@ class ChatManager {
         this.attachBtn.addEventListener('click', () => this.fileInput.click());
         this.fileInput.addEventListener('change', (e) => this.handleFileAttach(e));
         this.clearBtn.addEventListener('click', () => this.clearChat());
+        
+        // New chat button
+        document.getElementById('new-chat-btn')?.addEventListener('click', () => this.newChat());
+        
+        // History button
+        document.getElementById('chat-history-btn')?.addEventListener('click', () => this.showChatHistory());
 
         this.loadHistory();
+    }
+
+    newChat() {
+        if (this.messages.length > 0) {
+            this.saveChatToHistory();
+        }
+        this.clearChat();
+    }
+
+    async saveChatToHistory() {
+        const chatHistory = JSON.parse(localStorage.getItem('chat-history') || '[]');
+        chatHistory.unshift({
+            messages: this.messages,
+            timestamp: Date.now(),
+            date: new Date().toLocaleString()
+        });
+        
+        if (chatHistory.length > 50) chatHistory.splice(50);
+        localStorage.setItem('chat-history', JSON.stringify(chatHistory));
+    }
+
+    showChatHistory() {
+        const chatHistory = JSON.parse(localStorage.getItem('chat-history') || '[]');
+        
+        if (chatHistory.length === 0) {
+            alert('Nenhum histórico de chat encontrado.');
+            return;
+        }
+        
+        const historyHtml = chatHistory.map((item, index) => `
+            <div class="history-item-card" onclick="chat.loadChatFromHistory(${index})">
+                <div class="history-item-header">
+                    <strong>Conversa ${index + 1}</strong>
+                    <span style="font-size: 12px; color: var(--text-tertiary);">${item.date}</span>
+                </div>
+                <div class="history-item-preview">${item.messages[0]?.content.substring(0, 100)}...</div>
+            </div>
+        `).join('');
+        
+        // Show in modal or sidebar
+        alert('Histórico:\n\n' + chatHistory.map((h, i) => `${i + 1}. ${h.date}`).join('\n'));
+    }
+
+    loadChatFromHistory(index) {
+        const chatHistory = JSON.parse(localStorage.getItem('chat-history') || '[]');
+        const item = chatHistory[index];
+        
+        if (!item) return;
+        
+        this.messages = item.messages;
+        this.renderMessages();
     }
 
     async sendMessage() {
@@ -473,9 +530,18 @@ class ChatManager {
                     </div>
                 </div>
                 <div class="message-text">${content.replace(/\n/g, '<br>')}</div>
+                <div class="message-actions">
+                    <button class="copy-btn" onclick="navigator.clipboard.writeText('${content.replace(/'/g, "\\'")}'); this.textContent='✓ Copiado!';">📋 Copiar</button>
+                </div>
             `;
         } else {
-            messageDiv.textContent = content;
+            const escapedContent = content.replace(/'/g, "\\'");
+            messageDiv.innerHTML = `
+                <div>${content}</div>
+                <div class="message-actions">
+                    <button class="copy-btn" onclick="navigator.clipboard.writeText('${escapedContent}'); this.textContent='✓ Copiado!';">📋 Copiar</button>
+                </div>
+            `;
         }
         
         this.messagesContainer.appendChild(messageDiv);
@@ -665,6 +731,24 @@ class TranscriptionManager {
         this.exportBtn.addEventListener('click', () => this.exportTranscript());
         this.viewHistoryBtn.addEventListener('click', () => this.showHistory());
 
+        // Live translation toggle
+        document.getElementById('live-translation-toggle')?.addEventListener('change', (e) => {
+            const panel = document.getElementById('live-translation-panel');
+            panel.style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        // Upload file for analysis
+        document.getElementById('upload-transcript-file-btn')?.addEventListener('click', () => {
+            document.getElementById('transcript-file-input').click();
+        });
+
+        document.getElementById('transcript-file-input')?.addEventListener('change', (e) => {
+            this.handleFileUpload(e.target.files);
+        });
+
+        // Word hover for AI context
+        this.transcriptText.addEventListener('mouseup', (e) => this.handleWordSelection(e));
+
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -785,6 +869,17 @@ class TranscriptionManager {
 
         this.transcriptText.innerHTML = final + 
             (interim ? `<span style="color: #999; font-style: italic;">${interim}</span>` : '');
+        
+        // Apply highlight markers
+        this.applyHighlightMarkers();
+        
+        // Live translation
+        if (document.getElementById('live-translation-toggle')?.checked) {
+            this.translateLive(final);
+        }
+        
+        // Auto-detect questions
+        this.detectQuestions(final);
     }
 
     async enhanceRealtimeText() {
@@ -813,6 +908,9 @@ class TranscriptionManager {
             alert('Não há transcrição para processar!');
             return;
         }
+
+        // Aplicar marcadores (converter **texto** em destaque)
+        this.applyHighlightMarkers();
 
         // Mostrar opções de tradução se a ação for traduzir
         const translateOptions = document.getElementById('translate-options');
@@ -1163,6 +1261,160 @@ class TranscriptionManager {
         a.download = `transcricao-${Date.now()}.txt`;
         a.click();
         URL.revokeObjectURL(url);
+    }
+
+    // Live translation
+    async translateLive(text) {
+        const targetLang = document.getElementById('live-translation-lang').value;
+        const translationPanel = document.getElementById('live-translation-text');
+        
+        try {
+            const response = await fetch('/api/transcription/translate-live', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, targetLang })
+            });
+            
+            const data = await response.json();
+            if (data.translation) {
+                translationPanel.innerHTML = data.translation.replace(/\n/g, '<br>');
+            }
+        } catch (error) {
+            console.error('Error translating:', error);
+        }
+    }
+
+    // Auto-detect questions using NLP
+    async detectQuestions(text) {
+        if (!document.getElementById('auto-detect-questions-toggle')?.checked) return;
+        
+        try {
+            const response = await fetch('/api/transcription/detect-questions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            
+            const data = await response.json();
+            if (data.questions && data.questions.length > 0) {
+                // Auto-answer detected questions
+                for (const question of data.questions) {
+                    await this.autoAnswerQuestion(question);
+                }
+            }
+        } catch (error) {
+            console.error('Error detecting questions:', error);
+        }
+    }
+
+    async autoAnswerQuestion(question) {
+        const messagesContainer = document.getElementById('transcript-chat-messages');
+        
+        // Add question to chat
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'message user';
+        questionDiv.textContent = `🤖 Detectado: ${question}`;
+        messagesContainer.appendChild(questionDiv);
+        
+        // Get answer
+        try {
+            const response = await fetch('/api/transcription/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: question,
+                    transcriptContext: this.currentTranscript,
+                    history: this.chatMessages
+                })
+            });
+            
+            const data = await response.json();
+            this.addChatMessage('ai', data.response, data.thinking);
+        } catch (error) {
+            console.error('Error answering question:', error);
+        }
+    }
+
+    // Word hover with AI context
+    handleWordSelection(event) {
+        const selection = window.getSelection();
+        const selectedText = selection.toString().trim();
+        
+        if (selectedText && selectedText.split(' ').length <= 5) {
+            this.showWordHoverTooltip(event, selectedText);
+        }
+    }
+
+    showWordHoverTooltip(event, word) {
+        // Remove existing tooltip
+        const existingTooltip = document.querySelector('.word-hover-tooltip');
+        if (existingTooltip) existingTooltip.remove();
+        
+        const tooltip = document.createElement('div');
+        tooltip.className = 'word-hover-tooltip';
+        tooltip.textContent = '🤖 Enviar para AI';
+        tooltip.style.left = event.pageX + 'px';
+        tooltip.style.top = (event.pageY - 40) + 'px';
+        
+        tooltip.addEventListener('click', () => {
+            this.analyzeWordWithAI(word);
+            tooltip.remove();
+        });
+        
+        document.body.appendChild(tooltip);
+        
+        // Remove after 5 seconds
+        setTimeout(() => tooltip.remove(), 5000);
+    }
+
+    async analyzeWordWithAI(word) {
+        try {
+            const response = await fetch('/api/transcription/analyze-word', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    word,
+                    context: this.currentTranscript
+                })
+            });
+            
+            const data = await response.json();
+            if (data.analysis) {
+                this.addChatMessage('ai', `Análise de "${word}": ${data.analysis}`);
+            }
+        } catch (error) {
+            console.error('Error analyzing word:', error);
+        }
+    }
+
+    // Apply highlight markers (convert **text** to highlighted text)
+    applyHighlightMarkers() {
+        const content = this.transcriptText.innerHTML;
+        const highlighted = content.replace(/\*\*(.*?)\*\*/g, '<span class="highlight-marker">$1</span>');
+        this.transcriptText.innerHTML = highlighted;
+    }
+
+    // Handle file upload (PDF/Image)
+    async handleFileUpload(files) {
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('transcript', this.currentTranscript);
+            
+            try {
+                const response = await fetch('/api/transcription/analyze-file', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                if (data.analysis) {
+                    this.addChatMessage('ai', `📄 Análise de ${file.name}: ${data.analysis}`);
+                }
+            } catch (error) {
+                console.error('Error analyzing file:', error);
+            }
+        }
     }
 }
 

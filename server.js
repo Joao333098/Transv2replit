@@ -306,7 +306,7 @@ app.post('/api/transcription/process', async (req, res) => {
         }
 
         // Apply search grounding if enabled
-        if (useSearch) {
+        if (useSearch && useSearch === true) {
             config.tools = [{ googleSearch: {} }];
         }
 
@@ -462,6 +462,109 @@ app.post('/api/transcription/chat', async (req, res) => {
     } catch (error) {
         console.error('Error in transcription chat:', error);
         res.status(500).json({ error: 'Erro no chat de transcrição' });
+    }
+});
+
+// Live translation
+app.post('/api/transcription/translate-live', async (req, res) => {
+    try {
+        if (!aiTranscription) {
+            return res.status(500).json({ error: 'Transcription API key não configurada' });
+        }
+
+        const { text, targetLang } = req.body;
+        
+        const langMap = {
+            'pt-BR': 'português brasileiro',
+            'en-US': 'inglês americano',
+            'es-ES': 'espanhol',
+            'fr-FR': 'francês',
+            'de-DE': 'alemão',
+            'it-IT': 'italiano',
+            'ja-JP': 'japonês',
+            'zh-CN': 'chinês simplificado'
+        };
+
+        const targetLanguage = langMap[targetLang] || 'inglês';
+        const prompt = `Traduza o seguinte texto para ${targetLanguage}:\n\n${text}`;
+
+        const response = await aiTranscription.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            config: { temperature: 0.2 }
+        });
+
+        const translation = response.candidates?.[0]?.content?.parts?.[0]?.text || text;
+        res.json({ translation });
+    } catch (error) {
+        console.error('Error translating:', error);
+        res.json({ translation: req.body.text });
+    }
+});
+
+// Detect questions using NLP
+app.post('/api/transcription/detect-questions', async (req, res) => {
+    try {
+        if (!aiTranscription) {
+            return res.status(500).json({ error: 'Transcription API key não configurada' });
+        }
+
+        const { text } = req.body;
+        const prompt = `Analise o seguinte texto e identifique todas as perguntas diretas ou indiretas. Retorne apenas as perguntas, uma por linha:\n\n${text}`;
+
+        const response = await aiTranscription.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            config: { temperature: 0.3 }
+        });
+
+        const result = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const questions = result.split('\n').filter(q => q.trim().length > 0);
+        
+        res.json({ questions });
+    } catch (error) {
+        console.error('Error detecting questions:', error);
+        res.json({ questions: [] });
+    }
+});
+
+// Analyze word with context
+app.post('/api/transcription/analyze-word', async (req, res) => {
+    try {
+        if (!aiTranscription) {
+            return res.status(500).json({ error: 'Transcription API key não configurada' });
+        }
+
+        const { word, context } = req.body;
+        const prompt = `Contexto: ${context}\n\nAnalise a palavra ou frase "${word}" no contexto acima. Explique seu significado, uso e relevância de forma concisa.`;
+
+        const response = await aiTranscription.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            config: { temperature: 0.5 }
+        });
+
+        const analysis = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        res.json({ analysis });
+    } catch (error) {
+        console.error('Error analyzing word:', error);
+        res.json({ analysis: 'Erro ao analisar a palavra.' });
+    }
+});
+
+// Analyze file (PDF/Image) with transcript context
+app.post('/api/transcription/analyze-file', async (req, res) => {
+    try {
+        if (!aiFileAnalysis) {
+            return res.status(500).json({ error: 'File Analysis API key não configurada' });
+        }
+
+        // Handle multipart/form-data would require multer or similar
+        // For now, return a placeholder
+        res.json({ analysis: 'Funcionalidade de análise de arquivo em desenvolvimento.' });
+    } catch (error) {
+        console.error('Error analyzing file:', error);
+        res.json({ analysis: 'Erro ao analisar arquivo.' });
     }
 });
 

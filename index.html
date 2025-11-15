@@ -129,7 +129,9 @@
                         <span class="toggle-slider"></span>
                         <span class="toggle-label">Pesquisa Google</span>
                     </label>
-                    <button class="btn-secondary" id="clear-chat-btn">Limpar conversa</button>
+                    <button class="btn-secondary" id="chat-history-btn">📋 Histórico</button>
+                    <button class="btn-secondary" id="new-chat-btn">✨ Nova Conversa</button>
+                    <button class="btn-secondary" id="clear-chat-btn">🗑️ Limpar</button>
                 </div>
             </div>
             <div class="chat-messages" id="chat-messages">
@@ -208,6 +210,25 @@
                         <span class="toggle-slider"></span>
                         <span class="toggle-label">Pesquisa</span>
                     </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="live-translation-toggle">
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Tradução ao Vivo</span>
+                    </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-detect-questions-toggle">
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Auto-Detectar Perguntas</span>
+                    </label>
+                    <input type="file" id="transcript-file-input" accept="image/*,.pdf,application/pdf" hidden>
+                    <button class="btn-secondary" id="upload-transcript-file-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Upload PDF/Imagem
+                    </button>
                     <button class="btn-secondary" id="view-history-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/>
@@ -240,6 +261,22 @@
                         <span class="recording-indicator"></span>
                         <span>Gravando ao vivo...</span>
                     </div>
+                </div>
+                <div class="live-translation-panel" id="live-translation-panel" style="display: none;">
+                    <div class="translation-header">
+                        <h3>Tradução ao Vivo</h3>
+                        <select id="live-translation-lang" class="select-input">
+                            <option value="pt-BR">Português (BR)</option>
+                            <option value="en-US">Inglês (US)</option>
+                            <option value="es-ES">Espanhol</option>
+                            <option value="fr-FR">Francês</option>
+                            <option value="de-DE">Alemão</option>
+                            <option value="it-IT">Italiano</option>
+                            <option value="ja-JP">Japonês</option>
+                            <option value="zh-CN">Chinês</option>
+                        </select>
+                    </div>
+                    <div class="live-translation-text" id="live-translation-text"></div>
                 </div>
                 <div class="transcript-chat-panel">
                     <div class="panel-tabs">
