@@ -439,7 +439,7 @@ class ChatManager {
             if (data.error) {
                 this.addMessage('ai', 'Erro: ' + data.error);
             } else {
-                this.addMessage('ai', data.response);
+                this.addMessage('ai', data.response, data.thinking);
             }
         } catch (error) {
             console.error('Erro no chat:', error);
@@ -449,7 +449,7 @@ class ChatManager {
         }
     }
 
-    addMessage(role, content) {
+    addMessage(role, content, thinking = null) {
         // Remove welcome message
         const welcome = this.messagesContainer.querySelector('.chat-welcome');
         if (welcome) welcome.remove();
@@ -459,7 +459,25 @@ class ChatManager {
 
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${role}`;
-        messageDiv.textContent = content;
+        
+        if (role === 'ai' && thinking && thinking.trim()) {
+            const thinkingId = 'main-chat-thinking-' + Date.now();
+            messageDiv.innerHTML = `
+                <div class="thinking-container" id="container-${thinkingId}">
+                    <button class="thinking-toggle" onclick="document.getElementById('container-${thinkingId}').classList.toggle('expanded')">
+                        <span class="thinking-icon">⟩</span>
+                        <span class="thinking-label">Pensamento</span>
+                    </button>
+                    <div class="thinking-content" id="${thinkingId}">
+                        ${thinking.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+                <div class="message-text">${content.replace(/\n/g, '<br>')}</div>
+            `;
+        } else {
+            messageDiv.textContent = content;
+        }
+        
         this.messagesContainer.appendChild(messageDiv);
 
         this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
@@ -855,7 +873,27 @@ class TranscriptionManager {
                     formattedResult = '<p>' + formattedResult + '</p>';
                 }
                 
-                this.aiResponse.innerHTML = formattedResult;
+                // Display thinking if present
+                let thinkingHtml = '';
+                if (data.thinking && data.thinking.trim()) {
+                    const thinkingId = 'thinking-' + Date.now();
+                    thinkingHtml = `
+                        <div class="thinking-container" id="container-${thinkingId}">
+                            <button class="thinking-toggle" onclick="document.getElementById('container-${thinkingId}').classList.toggle('expanded')">
+                                <span class="thinking-icon">⟩</span>
+                                <span class="thinking-label">Pensamento do Gemini</span>
+                            </button>
+                            <div class="thinking-content" id="${thinkingId}">
+                                ${data.thinking.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                this.aiResponse.innerHTML = thinkingHtml + formattedResult;
+                
+                // Save to history
+                this.saveToAIToolHistory(action, formattedResult, data.thinking);
             } else {
                 this.aiResponse.innerHTML = '<div style="color: var(--text-tertiary);">Sem resultado</div>';
             }
@@ -903,7 +941,7 @@ class TranscriptionManager {
             if (data.error) {
                 this.addChatMessage('ai', 'Erro: ' + data.error);
             } else {
-                this.addChatMessage('ai', data.response);
+                this.addChatMessage('ai', data.response, data.thinking);
             }
         } catch (error) {
             console.error('Error in chat:', error);
@@ -911,15 +949,138 @@ class TranscriptionManager {
         }
     }
 
-    addChatMessage(role, content) {
+    addChatMessage(role, content, thinking = null) {
         const messagesContainer = document.getElementById('transcript-chat-messages');
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${role}`;
-        messageDiv.textContent = content;
+        
+        if (role === 'ai' && thinking && thinking.trim()) {
+            const thinkingId = 'chat-thinking-' + Date.now();
+            messageDiv.innerHTML = `
+                <div class="thinking-container" id="container-${thinkingId}">
+                    <button class="thinking-toggle" onclick="document.getElementById('container-${thinkingId}').classList.toggle('expanded')">
+                        <span class="thinking-icon">⟩</span>
+                        <span class="thinking-label">Pensamento</span>
+                    </button>
+                    <div class="thinking-content" id="${thinkingId}">
+                        ${thinking.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+                <div class="message-text">${content.replace(/\n/g, '<br>')}</div>
+            `;
+        } else {
+            messageDiv.textContent = content;
+        }
+        
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         this.chatMessages.push({ role, content });
+    }
+
+    saveToAIToolHistory(action, result, thinking) {
+        const historyKey = 'ai-tool-history';
+        const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+        
+        history.unshift({
+            action,
+            result,
+            thinking,
+            timestamp: Date.now(),
+            date: new Date().toLocaleString()
+        });
+        
+        // Keep only last 50 items
+        if (history.length > 50) {
+            history.splice(50);
+        }
+        
+        localStorage.setItem(historyKey, JSON.stringify(history));
+    }
+
+    showAIToolHistory() {
+        const historyKey = 'ai-tool-history';
+        const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+        
+        if (history.length === 0) {
+            alert('Nenhum histórico de ferramentas AI encontrado.');
+            return;
+        }
+        
+        const actionNames = {
+            'improve': 'Melhorar Texto',
+            'summarize': 'Resumir',
+            'keywords': 'Palavras-chave',
+            'questions': 'Gerar Perguntas',
+            'translate': 'Traduzir',
+            'topics': 'Identificar Tópicos',
+            'sentiment': 'Análise de Sentimento',
+            'entities': 'Entidades',
+            'action-items': 'Itens de Ação',
+            'minutes': 'Ata de Reunião'
+        };
+        
+        const historyHtml = history.map((item, index) => `
+            <div class="history-item-card" onclick="transcription.loadFromAIToolHistory(${index})">
+                <div class="history-item-header">
+                    <strong>${actionNames[item.action] || item.action}</strong>
+                    <span style="font-size: 12px; color: var(--text-tertiary);">${item.date}</span>
+                </div>
+                <div class="history-item-preview">${item.result.substring(0, 100)}...</div>
+            </div>
+        `).join('');
+        
+        this.aiResponse.innerHTML = `
+            <div style="margin-bottom: 16px;">
+                <button class="btn-small" onclick="transcription.clearAIToolResponse()" style="margin-right: 8px;">← Voltar</button>
+                <button class="btn-small" onclick="transcription.clearAIToolHistory()">Limpar Histórico</button>
+            </div>
+            <div class="history-grid">${historyHtml}</div>
+        `;
+    }
+
+    loadFromAIToolHistory(index) {
+        const historyKey = 'ai-tool-history';
+        const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+        const item = history[index];
+        
+        if (!item) return;
+        
+        let thinkingHtml = '';
+        if (item.thinking && item.thinking.trim()) {
+            const thinkingId = 'history-thinking-' + Date.now();
+            thinkingHtml = `
+                <div class="thinking-container" id="container-${thinkingId}">
+                    <button class="thinking-toggle" onclick="document.getElementById('container-${thinkingId}').classList.toggle('expanded')">
+                        <span class="thinking-icon">⟩</span>
+                        <span class="thinking-label">Pensamento do Gemini</span>
+                    </button>
+                    <div class="thinking-content" id="${thinkingId}">
+                        ${item.thinking.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        this.aiResponse.innerHTML = `
+            <div style="margin-bottom: 16px;">
+                <button class="btn-small" onclick="transcription.showAIToolHistory()">← Voltar ao Histórico</button>
+            </div>
+            ${thinkingHtml}
+            ${item.result}
+        `;
+    }
+
+    clearAIToolResponse() {
+        this.aiResponse.innerHTML = '';
+    }
+
+    clearAIToolHistory() {
+        if (confirm('Deseja realmente limpar todo o histórico de ferramentas AI?')) {
+            localStorage.removeItem('ai-tool-history');
+            this.aiResponse.innerHTML = '';
+            alert('Histórico limpo com sucesso!');
+        }
     }
 
     async saveTranscript() {

@@ -237,8 +237,19 @@ app.post('/api/chat', async (req, res) => {
             config
         });
 
-        const text = result.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta';
-        res.json({ response: text });
+        const candidate = result.candidates?.[0];
+        const text = candidate?.content?.parts?.[0]?.text || 'Sem resposta';
+        
+        // Extract thinking if present
+        let thinking = '';
+        if (candidate?.content?.parts && candidate.content.parts.length > 0) {
+            const thinkingPart = candidate.content.parts.find(part => part.thought);
+            if (thinkingPart) {
+                thinking = thinkingPart.thought;
+            }
+        }
+        
+        res.json({ response: text, thinking });
     } catch (error) {
         console.error('Error in chat:', error);
         res.status(500).json({ error: 'Erro ao processar solicitação: ' + error.message });
@@ -360,13 +371,23 @@ app.post('/api/transcription/process', async (req, res) => {
             return res.status(500).json({ error: 'Nenhuma resposta gerada pela IA' });
         }
 
-        const result = response.candidates[0]?.content?.parts?.[0]?.text || '';
+        const candidate = response.candidates[0];
+        const result = candidate?.content?.parts?.[0]?.text || '';
         
         if (!result || result.trim().length === 0) {
             return res.status(500).json({ error: 'Resposta vazia da IA' });
         }
 
-        res.json({ result });
+        // Extract thinking if present
+        let thinking = '';
+        if (candidate?.content?.parts && candidate.content.parts.length > 0) {
+            const thinkingPart = candidate.content.parts.find(part => part.thought);
+            if (thinkingPart) {
+                thinking = thinkingPart.thought;
+            }
+        }
+
+        res.json({ result, thinking });
     } catch (error) {
         console.error('Error processing transcription:', error);
         res.status(500).json({ error: 'Erro ao processar transcrição: ' + error.message });
@@ -425,8 +446,19 @@ app.post('/api/transcription/chat', async (req, res) => {
             config
         });
 
-        const result = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        res.json({ response: result });
+        const candidate = response.candidates?.[0];
+        const result = candidate?.content?.parts?.[0]?.text || '';
+        
+        // Extract thinking if present
+        let thinking = '';
+        if (candidate?.content?.parts && candidate.content.parts.length > 0) {
+            const thinkingPart = candidate.content.parts.find(part => part.thought);
+            if (thinkingPart) {
+                thinking = thinkingPart.thought;
+            }
+        }
+        
+        res.json({ response: result, thinking });
     } catch (error) {
         console.error('Error in transcription chat:', error);
         res.status(500).json({ error: 'Erro no chat de transcrição' });
