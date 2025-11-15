@@ -412,19 +412,21 @@ class ChatManager {
     }
 
     async saveChatToHistory() {
-        const chatHistory = JSON.parse(localStorage.getItem('chat-history') || '[]');
+        const chatHistory = JSON.parse(localStorage.getItem('shared-chat-history') || '[]');
         chatHistory.unshift({
+            type: 'chat',
             messages: this.messages,
             timestamp: Date.now(),
             date: new Date().toLocaleString()
         });
         
         if (chatHistory.length > 50) chatHistory.splice(50);
-        localStorage.setItem('chat-history', JSON.stringify(chatHistory));
+        localStorage.setItem('shared-chat-history', JSON.stringify(chatHistory));
     }
 
     showChatHistory() {
-        const chatHistory = JSON.parse(localStorage.getItem('chat-history') || '[]');
+        const chatHistory = JSON.parse(localStorage.getItem('shared-chat-history') || '[]')
+            .filter(item => item.type === 'chat');
         
         if (chatHistory.length === 0) {
             alert('Nenhum histórico de chat encontrado.');
@@ -446,7 +448,8 @@ class ChatManager {
     }
 
     loadChatFromHistory(index) {
-        const chatHistory = JSON.parse(localStorage.getItem('chat-history') || '[]');
+        const chatHistory = JSON.parse(localStorage.getItem('shared-chat-history') || '[]')
+            .filter(item => item.type === 'chat');
         const item = chatHistory[index];
         
         if (!item) return;
@@ -746,6 +749,11 @@ class TranscriptionManager {
         // Translation modal
         document.getElementById('close-translation-modal')?.addEventListener('click', () => {
             document.getElementById('translation-modal').style.display = 'none';
+        });
+        
+        // Chat translation button
+        document.getElementById('chat-translation-btn')?.addEventListener('click', () => {
+            this.openTranslationModal();
         });
 
         document.querySelectorAll('.translation-tool-btn').forEach(btn => {
@@ -1073,6 +1081,26 @@ class TranscriptionManager {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         this.chatMessages.push({ role, content });
+        
+        // Salvar no histórico compartilhado
+        const chatHistory = JSON.parse(localStorage.getItem('shared-chat-history') || '[]');
+        const existingTranscript = chatHistory.find(item => item.type === 'transcript-active');
+        
+        if (existingTranscript) {
+            existingTranscript.messages = this.chatMessages;
+            existingTranscript.timestamp = Date.now();
+            existingTranscript.date = new Date().toLocaleString();
+        } else {
+            chatHistory.unshift({
+                type: 'transcript-active',
+                messages: this.chatMessages,
+                timestamp: Date.now(),
+                date: new Date().toLocaleString()
+            });
+        }
+        
+        if (chatHistory.length > 50) chatHistory.splice(50);
+        localStorage.setItem('shared-chat-history', JSON.stringify(chatHistory));
     }
 
     saveToAIToolHistory(action, result, thinking) {
@@ -1268,11 +1296,12 @@ class TranscriptionManager {
             'pt-en': {
                 // Palavras comuns
                 'olá': 'hello', 'oi': 'hi', 'tchau': 'bye', 'adeus': 'goodbye',
-                'bom': 'good', 'dia': 'day', 'tarde': 'afternoon', 'noite': 'night',
+                'bom': 'good', 'boa': 'good', 'dia': 'day', 'tarde': 'afternoon', 'noite': 'night',
                 'obrigado': 'thank you', 'obrigada': 'thank you', 'por favor': 'please',
                 'sim': 'yes', 'não': 'no', 'talvez': 'maybe',
                 'hoje': 'today', 'ontem': 'yesterday', 'amanhã': 'tomorrow',
                 'agora': 'now', 'depois': 'later', 'antes': 'before',
+                'tudo': 'everything', 'bem': 'well', 'muito': 'very', 'pouco': 'little',
                 // Verbos
                 'ser': 'to be', 'estar': 'to be', 'ter': 'to have', 'fazer': 'to do/make',
                 'ir': 'to go', 'vir': 'to come', 'ver': 'to see', 'dar': 'to give',
@@ -1281,16 +1310,19 @@ class TranscriptionManager {
                 'casa': 'house', 'trabalho': 'work', 'escola': 'school', 'família': 'family',
                 'amigo': 'friend', 'amor': 'love', 'tempo': 'time/weather', 'vida': 'life',
                 'mundo': 'world', 'pessoa': 'person', 'coisa': 'thing', 'lugar': 'place',
-                'reunião': 'meeting', 'projeto': 'project', 'tarefa': 'task'
+                'reunião': 'meeting', 'projeto': 'project', 'tarefa': 'task',
+                'test': 'teste', 'teste': 'test'
             },
             'pt-es': {
                 'olá': 'hola', 'oi': 'hola', 'tchau': 'adiós', 'adeus': 'adiós',
-                'bom': 'bueno', 'dia': 'día', 'tarde': 'tarde', 'noite': 'noche',
+                'bom': 'bueno', 'boa': 'buena', 'dia': 'día', 'tarde': 'tarde', 'noite': 'noche',
                 'obrigado': 'gracias', 'obrigada': 'gracias', 'por favor': 'por favor',
                 'sim': 'sí', 'não': 'no', 'talvez': 'quizás',
                 'hoje': 'hoy', 'ontem': 'ayer', 'amanhã': 'mañana',
+                'tudo': 'todo', 'bem': 'bien', 'muito': 'mucho', 'pouco': 'poco',
                 'casa': 'casa', 'trabalho': 'trabajo', 'escola': 'escuela', 'família': 'familia',
-                'reunião': 'reunión', 'projeto': 'proyecto', 'tarefa': 'tarea'
+                'reunião': 'reunión', 'projeto': 'proyecto', 'tarefa': 'tarea',
+                'test': 'prueba', 'teste': 'prueba'
             },
             'en-pt': {
                 'hello': 'olá', 'hi': 'oi', 'bye': 'tchau', 'goodbye': 'adeus',
@@ -1298,8 +1330,10 @@ class TranscriptionManager {
                 'thank you': 'obrigado', 'please': 'por favor',
                 'yes': 'sim', 'no': 'não', 'maybe': 'talvez',
                 'today': 'hoje', 'yesterday': 'ontem', 'tomorrow': 'amanhã',
+                'everything': 'tudo', 'well': 'bem', 'very': 'muito', 'little': 'pouco',
                 'house': 'casa', 'work': 'trabalho', 'school': 'escola', 'family': 'família',
-                'meeting': 'reunião', 'project': 'projeto', 'task': 'tarefa'
+                'meeting': 'reunião', 'project': 'projeto', 'task': 'tarefa',
+                'test': 'teste'
             }
         };
     }
@@ -1398,21 +1432,36 @@ class TranscriptionManager {
         const translationPanel = document.getElementById('live-translation-text');
         
         const dict = this.getDictionary();
-        const dictKey = `pt-${targetLang.split('-')[0]}`;
+        const sourceLang = this.languageSelect.value.split('-')[0]; // pt, en, es, etc
+        const targetShort = targetLang.split('-')[0];
+        const dictKey = `${sourceLang}-${targetShort}`;
         
         if (!dict[dictKey]) {
-            translationPanel.innerHTML = text.replace(/\n/g, '<br>');
+            translationPanel.innerHTML = `<p style="color: var(--text-tertiary);">Tradução não disponível para ${sourceLang} → ${targetShort}</p>`;
             return;
         }
 
-        // Tradução palavra por palavra
-        const words = text.toLowerCase().split(/\s+/);
-        const translated = words.map(word => {
-            const cleanWord = word.replace(/[.,!?;:]/g, '');
-            return dict[dictKey][cleanWord] || word;
-        });
+        // Tradução palavra por palavra preservando pontuação
+        const sentences = text.split(/([.!?])/);
+        const translated = sentences.map(sentence => {
+            if (sentence.match(/[.!?]/)) return sentence;
+            
+            const words = sentence.split(/\s+/);
+            return words.map(word => {
+                const cleanWord = word.toLowerCase().replace(/[.,!?;:]/g, '');
+                const translation = dict[dictKey][cleanWord];
+                if (translation) {
+                    // Preservar capitalização
+                    if (word[0] === word[0].toUpperCase()) {
+                        return translation.charAt(0).toUpperCase() + translation.slice(1);
+                    }
+                    return translation;
+                }
+                return word;
+            }).join(' ');
+        }).join('');
 
-        translationPanel.innerHTML = translated.join(' ').replace(/\n/g, '<br>');
+        translationPanel.innerHTML = translated.replace(/\n/g, '<br>');
     }
 
     // Auto-detect questions using NLP
