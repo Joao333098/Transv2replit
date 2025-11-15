@@ -15,3 +15,19 @@ ignorePorts = false
 
 [agent]
 expertMode = true
+
+[workflows]
+runButton = "Run"
+
+[[workflows.workflow]]
+name = "Run"
+author = 49762821
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
