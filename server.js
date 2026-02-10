@@ -7,7 +7,8 @@ const { GoogleGenAI } = require('@google/genai');
 const app = express();
 
 // Middleware
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -69,7 +70,13 @@ const aiFileAnalysis = fileAnalysisKey ? new GoogleGenAI({ apiKey: fileAnalysisK
 
 // File Management Routes
 app.post('/api/files/upload', upload.array('files'), (req, res) => {
+    console.log('Recebendo requisição de upload...');
+    console.log('Arquivos recebidos:', req.files ? req.files.length : 0);
     try {
+        if (!req.files || req.files.length === 0) {
+            console.log('Nenhum arquivo enviado na requisição');
+            return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+        }
         const db = getDB();
         const savedFiles = [];
         for (const file of req.files) {

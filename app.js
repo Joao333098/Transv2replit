@@ -661,8 +661,15 @@ class FilesManager {
     }
 
     init() {
-        this.uploadBtn.addEventListener('click', () => this.fileInput.click());
-        this.fileInput.addEventListener('change', (e) => this.handleUpload(e.target.files));
+        this.uploadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.fileInput.click();
+        });
+        this.fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                this.handleUpload(e.target.files);
+            }
+        });
 
         // Drag and drop
         this.filesGrid.addEventListener('dragover', (e) => {
@@ -680,22 +687,38 @@ class FilesManager {
 
     async handleUpload(files) {
         const formData = new FormData();
-        for (const file of files) {
-            formData.append('files', file);
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
         }
 
+        const originalBtnText = this.uploadBtn.innerHTML;
+        this.uploadBtn.innerHTML = 'Enviando...';
+        this.uploadBtn.disabled = true;
+
         try {
+            console.log('Iniciando upload de', files.length, 'arquivos');
             const response = await fetch('/api/files/upload', {
                 method: 'POST',
                 body: formData
             });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Erro no servidor');
+            }
+
             const data = await response.json();
             if (data.success) {
+                console.log('Upload concluído com sucesso');
                 this.render();
+                this.fileInput.value = ''; // Limpa o input para permitir novo upload do mesmo arquivo
             }
         } catch (error) {
             console.error('Erro no upload:', error);
-            alert('Erro ao enviar arquivos para o servidor');
+            alert('Erro ao enviar arquivos: ' + error.message);
+        } finally {
+            this.uploadBtn.innerHTML = originalBtnText;
+            this.uploadBtn.disabled = false;
         }
     }
 
