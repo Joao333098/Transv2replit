@@ -759,7 +759,17 @@ class FilesManager {
     }
 
     async downloadFile(id) {
-        window.location.href = `/api/files/download/${id}`;
+        try {
+            const link = document.createElement('a');
+            link.href = `/api/files/download/${id}`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Erro ao baixar:', error);
+            alert('Erro ao iniciar o download');
+        }
     }
 
     async deleteFile(id) {
@@ -1934,7 +1944,7 @@ class TranscriptionManager {
     const editor = new EditorManager(storage);
     const documents = new DocumentsManager(storage, editor, navigation);
     const chat = new ChatManager(storage);
-    const files = new FilesManager(storage);
+    window.filesManager = new FilesManager(storage);
     window.transcription = new TranscriptionManager(storage);
 
     console.log('✨ Writebox inicializado com sucesso!');

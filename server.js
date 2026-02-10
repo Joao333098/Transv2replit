@@ -133,7 +133,8 @@ app.get('/api/files/download/:id', (req, res) => {
         
         if (file && fs.existsSync(file.path)) {
             const absolutePath = path.resolve(file.path);
-            res.download(absolutePath, file.name);
+            res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.name)}"`);
+            res.sendFile(absolutePath);
         } else {
             res.status(404).json({ error: 'Arquivo não encontrado' });
         }
