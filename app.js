@@ -679,19 +679,24 @@ class FilesManager {
     }
 
     async handleUpload(files) {
+        const formData = new FormData();
         for (const file of files) {
-            const fileData = {
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                uploadDate: new Date().toISOString(),
-                data: await this.fileToBase64(file)
-            };
-
-            await this.storage.save('files', fileData);
+            formData.append('files', file);
         }
 
-        this.render();
+        try {
+            const response = await fetch('/api/files/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.success) {
+                this.render();
+            }
+        } catch (error) {
+            console.error('Erro no upload:', error);
+            alert('Erro ao enviar arquivos para o servidor');
+        }
     }
 
     fileToBase64(file) {
@@ -703,34 +708,73 @@ class FilesManager {
     }
 
     async render() {
-        const files = await this.storage.getAll('files');
+        try {
+            const response = await fetch('/api/files');
+            const files = await response.json();
 
-        if (files.length === 0) {
-            this.filesGrid.innerHTML = `
-                <div class="empty-state-dark">
-                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            if (files.length === 0) {
+                this.filesGrid.innerHTML = `
+                    <div class="empty-state-dark">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                            <polyline points="13 2 13 9 20 9"/>
+                        </svg>
+                        <p>Nenhum arquivo</p>
+                        <p class="subtitle">Clique em Upload ou arraste arquivos aqui</p>
+                    </div>
+                `;
+                return;
+            }
+
+            this.filesGrid.innerHTML = files.map(file => `
+                <div class="file-card" data-id="${file.id}">
+                    <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
                         <polyline points="13 2 13 9 20 9"/>
                     </svg>
-                    <p>Nenhum arquivo</p>
-                    <p class="subtitle">Clique em Upload ou arraste arquivos aqui</p>
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-meta">
+                        <span>${this.formatSize(file.size)}</span>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn-icon-small" onclick="filesManager.downloadFile(${file.id})" title="Baixar">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </button>
+                        <button class="btn-icon-small" onclick="filesManager.deleteFile(${file.id})" title="Excluir">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-            `;
-            return;
+            `).join('');
+        } catch (error) {
+            console.error('Erro ao carregar arquivos:', error);
         }
+    }
 
-        this.filesGrid.innerHTML = files.reverse().map(file => `
-            <div class="file-card" data-id="${file.id}">
-                <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
-                    <polyline points="13 2 13 9 20 9"/>
-                </svg>
-                <div class="file-name">${file.name}</div>
-                <div class="file-meta">
-                    <span>${this.formatSize(file.size)}</span>
-                </div>
-            </div>
-        `).join('');
+    async downloadFile(id) {
+        window.location.href = `/api/files/download/${id}`;
+    }
+
+    async deleteFile(id) {
+        if (confirm('Deseja realmente excluir este arquivo?')) {
+            try {
+                const response = await fetch(`/api/files/${id}`, { method: 'DELETE' });
+                const data = await response.json();
+                if (data.success) {
+                    this.render();
+                }
+            } catch (error) {
+                console.error('Erro ao excluir:', error);
+                alert('Erro ao excluir arquivo');
+            }
+        }
     }
 
     formatSize(bytes) {

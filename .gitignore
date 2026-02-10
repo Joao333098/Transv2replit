@@ -131,3 +131,6 @@ dist
 
 # Replit debugger
 .breakpoints
+# Local database and uploads
+database.json
+uploads/
