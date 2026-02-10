@@ -7,8 +7,9 @@ const { GoogleGenAI } = require('@google/genai');
 const app = express();
 
 // Middleware
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ limit: '100mb', extended: true }));
+// Aumentando limite para 500MB para suportar fotos e vídeos grandes
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -42,7 +43,10 @@ const storage = multer.diskStorage({
         cb(null, uniqueSuffix + '-' + file.originalname);
     }
 });
-const upload = multer({ storage: storage });
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 500 * 1024 * 1024 } // Limite de 500MB por arquivo
+});
 
 // Load config
 let config = { gemini: { editor: '', chat: '', transcription: '', fileAnalysis: '' } };
@@ -288,6 +292,10 @@ app.post('/api/transcription/process', async (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
+
+// Aumentando o timeout do servidor para 10 minutos para uploads lentos
+server.timeout = 600000;
+server.keepAliveTimeout = 600000;

@@ -692,14 +692,18 @@ class FilesManager {
         }
 
         const originalBtnText = this.uploadBtn.innerHTML;
-        this.uploadBtn.innerHTML = 'Enviando...';
+        this.uploadBtn.innerHTML = '<span class="loading-spinner"></span> Enviando...';
         this.uploadBtn.disabled = true;
 
         try {
             console.log('Iniciando upload de', files.length, 'arquivos');
+            // Usando XMLHttpRequest para poder monitorar progresso no futuro se necessário
+            // Mas por enquanto mantendo fetch com timeout maior via sinal se suportado
             const response = await fetch('/api/files/upload', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                // O fetch não tem timeout nativo, mas o navegador gerencia. 
+                // O importante é o servidor não fechar a conexão.
             });
             
             if (!response.ok) {
